@@ -1,5 +1,5 @@
 Tiefer schürfend
-================
+===============
 
 Ruby hat sich hat sich neben Perl und Python als Skriptsprache etabliert. Dabei ist Ruby im Vergleich zu den beiden anderen von Grund auf  objekt-orientiert, dazu syntaktisch sehr einfach und klar. Nicht zuletzt deshalb schwören viele Gurus der Entwicklungsszene wie Martin Fowler oder Dave Thomas auf Ruby. Und die Zahl der "Überläufer" wächst.
 
