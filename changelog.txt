@@ -6,8 +6,9 @@ BUG = Resolved bug
 OPT = Optimization
 CLN = Cleanup/Refactoring
 
-Release 1.6.3 (xxx)
+Release 1.6.3 (08 Apr 2006)
 ---------------------------
+* FEA: Now using SVN-Support of SourceForge
 * CLN: Classes in de.simplicit.vjdbc are now public. Some tools (i.e. Spring) seem to have problems when 
        they access these classes via reflection without using the public JDBC-Interfaces (thx to Anton Keks)
 * CLN: CommandSinks now must support a close-Method for cleanup

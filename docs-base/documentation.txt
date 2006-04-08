@@ -3,7 +3,7 @@
 =================
 
 :Authors: Michael Link
-:Version: 1.6.2 (10.12.2005)
+:Version: 1.6.3 (08.04.2006)
 
 .. contents::
 .. sectnum::
