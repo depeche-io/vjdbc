@@ -121,7 +121,7 @@ public class VirtualStatement extends VirtualBase implements Statement {
     }
 
     public void cancel() throws SQLException {
-        _sink.process(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.STATEMENT, "cancel"));
+        _sink.process(_objectUid, new StatementCancelCommand());
     }
 
     public SQLWarning getWarnings() throws SQLException {

@@ -22,6 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import de.simplicit.vjdbc.VJdbcException;
 import de.simplicit.vjdbc.command.Command;
 import de.simplicit.vjdbc.command.DestroyCommand;
+import de.simplicit.vjdbc.command.StatementCancelCommand;
 import de.simplicit.vjdbc.serial.CallingContext;
 import de.simplicit.vjdbc.serial.UIDEx;
 import de.simplicit.vjdbc.server.config.ConnectionConfiguration;
@@ -145,33 +146,37 @@ public class CommandProcessor {
             ConnectionEntry connentry = (ConnectionEntry) _connectionEntries.get(connuid);
 
             if(connentry != null) {
-                // Synchronize on the connection entry to prevent multiple
-                // commands executed the same time
-                synchronized (connentry) {
-                    try {
+                try {
+                    // StatementCancelCommand can be executed asynchronously to terminate
+                    // a running query
+                    if(cmd instanceof StatementCancelCommand) {
+                        connentry.cancelCurrentStatementExecution(uid);
+                    }
+                    else {
+                        // All other commands must be executed synchronously which is done
+                        // by calling the synchronous executeCommand-Method
                         result = connentry.executeCommand(uid, cmd, ctx);
-                    } catch (SQLException e) {
-                        if(_logger.isDebugEnabled()) {
-                            _logger.debug("SQLException", e);
-                        }
-                        // Wrap the SQLException into something that can be
-                        // safely thrown
-                        throw SQLExceptionHelper.wrap(e);
-                    } catch (Throwable e) {
-                        // Serious runtime error occured, wrap it in an
-                        // SQLException
-                        _logger.error(e);
-                        throw SQLExceptionHelper.wrap(e);
-                    } finally {
-                        // When there are no more JDBC objects left in the
-                        // connection entry (that
-                        // means even the JDBC-Connection is gone) the
-                        // connection entry will be
-                        // immediately destroyed and removed.
-                        if(!connentry.hasJdbcObjects()) {
+                    }
+                } catch (SQLException e) {
+                    if(_logger.isDebugEnabled()) {
+                        _logger.debug("SQLException", e);
+                    }
+                    // Wrap the SQLException into something that can be safely thrown
+                    throw SQLExceptionHelper.wrap(e);
+                } catch (Throwable e) {
+                    // Serious runtime error occured, wrap it in an SQLException
+                    _logger.error(e);
+                    throw SQLExceptionHelper.wrap(e);
+                } finally {
+                    // When there are no more JDBC objects left in the connection entry (that
+                    // means even the JDBC-Connection is gone) the connection entry will be
+                    // immediately destroyed and removed.
+                    if(!connentry.hasJdbcObjects()) {
+                        // As remove can be called asynchronously here, we must check the
+                        // return value.
+                        if(_connectionEntries.remove(connuid) != null) {
                             _logger.info("Connection " + connuid + " closed, statistics:");
                             connentry.traceConnectionStatistics();
-                            _connectionEntries.remove(connuid);
                         }
                     }
                 }

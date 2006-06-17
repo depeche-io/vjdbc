@@ -14,39 +14,44 @@ import java.sql.SQLWarning;
  */
 public class SQLExceptionHelper {
     public static SQLException wrap(Throwable t) {
-        return wrapThrowable(t, true);
+        return wrapThrowable(t);
     }
-
-    private static SQLException wrapSQLException(SQLException e) {
-        boolean returnOriginalException = true;
-        
-        // Check here if all chained SQLExceptions can be serialized, there may be
-        // vendor specific SQLException classes which can't be delivered to the client
-        SQLException loop = e;
-        while(loop != null && returnOriginalException) {
-            returnOriginalException = e.getClass().equals(SQLException.class) || e.getClass().equals(SQLWarning.class);
-            loop = loop.getNextException();
-        }
-        
-        if(returnOriginalException) {
-            return e;
+    
+    public static SQLException wrap(SQLException ex) {
+        if(isSQLExceptionGeneric(ex)) {
+            return ex;
         }
         else {
-            // When we can't return the original SQLException (as it contains a derived SQLException in its
-            // chain) we simply wrap it in a generic way. We must suppress the check for SQLExceptions in
-            // wrapThrowable as this causes a endless recursion and thus stack overflow.
-            return wrapThrowable(e, false);
+            return wrapSQLException(ex);
         }
     }
     
-    private static SQLException wrapThrowable(Throwable t, boolean checkForSQLException) {
-        // First check if the exception is already a SQLException
-        if(checkForSQLException && t instanceof SQLException) {
-            return wrapSQLException((SQLException)t);
+    private static boolean isSQLExceptionGeneric(SQLException ex) {
+        boolean exceptionIsGeneric = true;
+        
+        // Check here if all chained SQLExceptions can be serialized, there may be
+        // vendor specific SQLException classes which can't be delivered to the client
+        SQLException loop = ex;
+        while(loop != null && exceptionIsGeneric) {
+            exceptionIsGeneric = ex.getClass().equals(SQLException.class) || ex.getClass().equals(SQLWarning.class);
+            loop = loop.getNextException();
         }
+        
+        return exceptionIsGeneric;
+    }
+
+    private static SQLException wrapSQLException(SQLException ex) {
+        SQLException ex2 = new SQLException(ex.getMessage(), ex.getSQLState(), ex.getErrorCode());
+        if(ex.getNextException() != null) {
+            ex2.setNextException(wrapSQLException(ex.getNextException()));
+        }
+        return ex2;
+    }
+    
+    private static SQLException wrapThrowable(Throwable t) {
         // Then check if a cause is present
-        else if(JavaVersionInfo.use14Api && t.getCause() != null) {
-            return wrapThrowable(t.getCause(), true);
+        if(JavaVersionInfo.use14Api && t.getCause() != null) {
+            return wrapThrowable(t.getCause());
         }
         // Nothing to do, wrap the thing in a generic SQLException
         else {

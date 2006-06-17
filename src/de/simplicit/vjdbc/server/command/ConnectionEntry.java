@@ -20,6 +20,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 
 class ConnectionEntry implements ConnectionContext {
@@ -158,8 +159,7 @@ class ConnectionEntry implements ConnectionContext {
                     }
                     // Execute the command on the target object
                     result = cmd.execute(target.getJdbcObject(), this);
-                    // Check if the result must be remembered on the server side
-                    // with a UID
+                    // Check if the result must be remembered on the server side with a UID
                     UIDEx uidResult = ReturnedObjectGuard.checkResult(result);
 
                     if(uidResult != null) {
@@ -170,8 +170,7 @@ class ConnectionEntry implements ConnectionContext {
                         }
                         return uidResult;
                     } else {
-                        // When the result is of type ResultSet then handle it
-                        // specially
+                        // When the result is of type ResultSet then handle it specially
                         if(result != null) {
                             if(result instanceof ResultSet) {
                                 boolean forwardOnly = false;
@@ -215,6 +214,13 @@ class ConnectionEntry implements ConnectionContext {
             _active = false;
             _lastAccessTimestamp = System.currentTimeMillis();
         }
+    }
+    
+    public void cancelCurrentStatementExecution(Long uid) throws SQLException {
+        // Get the Statement object
+        JdbcObjectHolder target = (JdbcObjectHolder) _jdbcObjects.get(uid);
+        Statement statement = (Statement)target.getJdbcObject();
+        statement.cancel();
     }
 
     public void traceConnectionStatistics() {
@@ -266,8 +272,11 @@ class ConnectionEntry implements ConnectionContext {
 
     private Object handleResultSet(ResultSet result, boolean forwardOnly, CallingContext ctx) throws SQLException {
         // Populate a StreamingResultSet
-        StreamingResultSet srs = new StreamingResultSet(_connectionConfiguration.getRowPacketSize(), forwardOnly, _connectionConfiguration
-                .isPrefetchResultSetMetaData(), _connectionConfiguration.getCharset());
+        StreamingResultSet srs = new StreamingResultSet(
+                _connectionConfiguration.getRowPacketSize(), 
+                forwardOnly, 
+                _connectionConfiguration.isPrefetchResultSetMetaData(), 
+                _connectionConfiguration.getCharset());
         // Populate it
         boolean lastPartReached = srs.populate(result);
         // Remember the ResultSet and put the UID in the StreamingResultSet
@@ -311,10 +320,9 @@ class ConnectionEntry implements ConnectionContext {
         }
     }
 
-    private String checkAgainstQueryFilters(String sql) throws SQLException {
+    private void checkAgainstQueryFilters(String sql) throws SQLException {
         if(_connectionConfiguration.getQueryFilters() != null) {
             _connectionConfiguration.getQueryFilters().checkAgainstFilters(sql);
         }
-        return sql;
     }
 }

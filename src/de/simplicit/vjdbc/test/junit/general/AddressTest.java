@@ -163,6 +163,24 @@ public abstract class AddressTest extends VJdbcTest {
         stmt1.close();
         stmt2.close();
     }
+    
+    public void testCancelStatement() throws Exception {
+        final Statement stmt = _connVJdbc.createStatement();
+        Thread t = new Thread(new Runnable() {
+            public void run() {
+                try {
+                    Thread.sleep(100);
+                    stmt.cancel();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } 
+            }
+        });
+        t.start();
+        stmt.executeQuery("select * from Address a, Address b where a.id = b.id");
+        stmt.close();
+        t.join();
+    }
 
     public void testConversions() throws Exception {
         Statement stmtVJdbc = _connVJdbc.createStatement();
