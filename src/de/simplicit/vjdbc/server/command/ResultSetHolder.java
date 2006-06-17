@@ -18,7 +18,7 @@ import de.simplicit.vjdbc.server.config.ConnectionConfiguration;
  * result when nextRowPacket is called.
  */
 public class ResultSetHolder {
-    private Object _lock = new Object();
+    private final Object _lock = new Object();
     private boolean _readerThreadIsRunning = false;
 
     private ResultSet _resultSet;
