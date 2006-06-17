@@ -50,6 +50,7 @@ public class Zipper {
                 int count = inflater.inflate(buf);
                 bos.write(buf, 0, count);
             } catch (DataFormatException e) {
+                throw new IOException(e.toString());
             }
         }
 

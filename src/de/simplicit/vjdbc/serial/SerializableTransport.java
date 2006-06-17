@@ -49,8 +49,7 @@ public class SerializableTransport implements Externalizable {
             try {
                 byte[] serializedObject = serializeObject(crs);
                 if(serializedObject.length >= minimumSize) {
-                    byte[] compressed = Zipper.zip(serializedObject, compressionMode);
-                    _transportee = compressed;
+                    _transportee = Zipper.zip(serializedObject, compressionMode);
                     _isCompressed = true;
                 } else {
                     _transportee = crs;

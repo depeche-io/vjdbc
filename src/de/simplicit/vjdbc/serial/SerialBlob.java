@@ -21,7 +21,7 @@ public class SerialBlob implements Blob, Externalizable {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             InputStream is = other.getBinaryStream();
             byte[] buff = new byte[1024];
-            int len = 0;
+            int len;
             while((len = is.read(buff)) > 0) {
                 baos.write(buff, 0, len);
             }

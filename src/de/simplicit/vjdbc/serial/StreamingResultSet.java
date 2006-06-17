@@ -41,9 +41,9 @@ public class StreamingResultSet implements ResultSet, Externalizable {
     private transient int _fetchDirection;
     private transient boolean _prefetchMetaData;
     private transient Statement _statement;
-    private transient boolean _wasNull = false;
 
     protected void finalize() throws Throwable {
+        super.finalize();
         if(_remainingResultSet != null) {
             close();
         }
@@ -667,7 +667,7 @@ public class StreamingResultSet implements ResultSet, Externalizable {
         if(preGetCheckNull(columnIndex)) {
             Object obj = _actualRow[columnIndex];
 
-            byte[] bytes = null;
+            byte[] bytes;
 
             if(obj instanceof byte[]) {
                 bytes = (byte[])obj;
@@ -891,7 +891,7 @@ public class StreamingResultSet implements ResultSet, Externalizable {
             // Set scale if necessary
             if(result != null) {
                 if(scale >= 0) {
-                    result.setScale(scale);
+                    result = result.setScale(scale);
                 }
             }
             else {
@@ -1399,8 +1399,8 @@ public class StreamingResultSet implements ResultSet, Externalizable {
 
     private boolean preGetCheckNull(int index) {
         _lastReadColumn = index;
-        _wasNull = _actualRow[_lastReadColumn] == null;
-        return !_wasNull;
+        boolean wasNull = _actualRow[_lastReadColumn] == null;
+        return !wasNull;
     }
 
     private boolean requestNextRowPacket() throws SQLException {

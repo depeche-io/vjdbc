@@ -23,7 +23,7 @@ public class SerialClob implements Clob, Externalizable {
             StringWriter sw = new StringWriter();
             Reader rd = other.getCharacterStream();
             char[] buff = new char[1024];
-            int len = 0;
+            int len;
             while((len = rd.read(buff)) > 0) {
                 sw.write(buff, 0, len);
             }

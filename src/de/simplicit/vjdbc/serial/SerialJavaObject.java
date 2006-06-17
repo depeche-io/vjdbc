@@ -18,6 +18,9 @@ public class SerialJavaObject implements Externalizable {
         _javaObject = javaObject;
     }
 
+    public SerialJavaObject() {
+    }
+
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeObject(_javaObject);
     }
