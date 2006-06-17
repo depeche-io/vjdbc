@@ -31,7 +31,7 @@ public class StatementExecuteCommand implements Command {
     }
 
     public Object execute(Object target, ConnectionContext ctx) throws SQLException {
-        return new Boolean(((Statement) target).execute(ctx.resolveOrCheckQuery(_sql)));
+        return Boolean.valueOf(((Statement) target).execute(ctx.resolveOrCheckQuery(_sql)));
     }
 
     public String toString() {
