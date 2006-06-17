@@ -45,8 +45,7 @@ public class PreparedStatementExecuteBatchCommand implements Command {
             pstmt.addBatch();
         }
 
-        int[] updatecount = pstmt.executeBatch();
-        return updatecount;
+        return pstmt.executeBatch();
     }
 
     public String toString() {
