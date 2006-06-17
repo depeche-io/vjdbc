@@ -63,8 +63,7 @@ public class ReflectiveCommand implements Command, Externalizable {
         try {
             _targetClass = JdbcInterfaceType._interfaces[_interfaceType];
             Method method = _targetClass.getDeclaredMethod(_cmd, ParameterTypeCombinations._typeCombinations[_parameterTypes]);
-            Object result = method.invoke(target, _parameters);
-            return result;
+            return method.invoke(target, _parameters);
         } catch(NoSuchMethodException e) {
             String msg = "No such method '" + _cmd + "' on object " + target + " (Target-Class " + _targetClass.getName() + ")";
             _logger.warn(msg);
