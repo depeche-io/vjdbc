@@ -67,7 +67,7 @@ public class CallableStatementSetObjectCommand implements Command {
     public Object execute(Object target, ConnectionContext ctx) throws SQLException {
         CallableStatement cstmt = (CallableStatement)target;
 
-        Object obj = null;
+        Object obj;
         try {
             obj = _transport.getTransportee();
         } catch(Exception e) {
