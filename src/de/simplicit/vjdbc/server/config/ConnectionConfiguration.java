@@ -319,7 +319,7 @@ public class ConnectionConfiguration {
     }
 
     private Connection createConnectionViaDataSource() throws SQLException {
-        Connection result = null;
+        Connection result;
 
         _logger.debug("Creating DataSourceFactory from class " + _dataSourceProvider);
 
