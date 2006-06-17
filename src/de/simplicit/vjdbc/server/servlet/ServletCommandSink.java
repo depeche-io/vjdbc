@@ -55,9 +55,7 @@ public class ServletCommandSink extends HttpServlet {
         } finally {
             try {
                 is.close();
-            } catch (IOException e) {
-                ;
-            }
+            } catch (IOException e) {}
         }
     }
 
@@ -133,16 +131,12 @@ public class ServletCommandSink extends HttpServlet {
             if(ois != null) {
                 try {
                     ois.close();
-                } catch (IOException e) {
-                    ;
-                }
+                } catch (IOException e) {}
             }
             if(oos != null) {
                 try {
                     oos.close();
-                } catch (IOException e) {
-                    ;
-                }
+                } catch (IOException e) {}
             }
         }
     }
