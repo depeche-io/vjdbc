@@ -33,7 +33,7 @@ public class SQLExceptionHelper {
         // vendor specific SQLException classes which can't be delivered to the client
         SQLException loop = ex;
         while(loop != null && exceptionIsGeneric) {
-            exceptionIsGeneric = ex.getClass().equals(SQLException.class) || ex.getClass().equals(SQLWarning.class);
+            exceptionIsGeneric = loop.getClass().equals(SQLException.class) || loop.getClass().equals(SQLWarning.class);
             loop = loop.getNextException();
         }
         
