@@ -4,30 +4,36 @@
 
 package de.simplicit.vjdbc.server.servlet;
 
-import de.simplicit.vjdbc.command.Command;
-import de.simplicit.vjdbc.serial.CallingContext;
-import de.simplicit.vjdbc.server.command.CommandProcessor;
-import de.simplicit.vjdbc.server.config.ConfigurationException;
-import de.simplicit.vjdbc.server.config.ConnectionConfiguration;
-import de.simplicit.vjdbc.server.config.VJdbcConfiguration;
-import de.simplicit.vjdbc.servlet.ServletCommandSinkClient;
-import de.simplicit.vjdbc.util.SQLExceptionHelper;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Properties;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Properties;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import de.simplicit.vjdbc.command.Command;
+import de.simplicit.vjdbc.serial.CallingContext;
+import de.simplicit.vjdbc.server.command.CommandProcessor;
+import de.simplicit.vjdbc.server.config.ConfigurationException;
+import de.simplicit.vjdbc.server.config.ConnectionConfiguration;
+import de.simplicit.vjdbc.server.config.VJdbcConfiguration;
+import de.simplicit.vjdbc.servlet.ServletCommandSinkIdentifier;
+import de.simplicit.vjdbc.util.SQLExceptionHelper;
 
 public class ServletCommandSink extends HttpServlet {
-    private static final String CONFIG_RESOURCE = "/WEB-INF/vjdbc-config.xml";
+    private static final String INIT_PARAMETER_CONFIG_RESOURCE = "config-resource";
+    private static final String DEFAULT_CONFIG_RESOURCE = "/WEB-INF/vjdbc-config.xml";
     private static final long serialVersionUID = 3257570624301249846L;
     private static Log _logger = LogFactory.getLog(ServletCommandSink.class);
 
@@ -37,10 +43,17 @@ public class ServletCommandSink extends HttpServlet {
     }
 
     public void init(ServletConfig servletConfig) throws ServletException {
-        _logger.info("Trying to get config resource " + CONFIG_RESOURCE + "...");
-        InputStream is = servletConfig.getServletContext().getResourceAsStream(CONFIG_RESOURCE);
+        String configResource = servletConfig.getInitParameter(INIT_PARAMETER_CONFIG_RESOURCE);
+        
+        // Use default location when nothing is configured
+        if(configResource == null) {
+            configResource = DEFAULT_CONFIG_RESOURCE;
+        }
+        
+        _logger.info("Trying to get config resource " + configResource + "...");
+        InputStream is = servletConfig.getServletContext().getResourceAsStream(configResource);
         if(is == null) {
-            String msg = "VJDBC-Configuration " + CONFIG_RESOURCE + " not found !";
+            String msg = "VJDBC-Configuration " + configResource + " not found !";
             _logger.error(msg);
             throw new ServletException(msg);
         }
@@ -76,7 +89,7 @@ public class ServletCommandSink extends HttpServlet {
 
         try {
             // Get the method to execute
-            String method = httpServletRequest.getHeader(ServletCommandSinkClient.METHOD_IDENTIFIER);
+            String method = httpServletRequest.getHeader(ServletCommandSinkIdentifier.METHOD_IDENTIFIER);
 
             if(method != null) {
                 ois = new ObjectInputStream(httpServletRequest.getInputStream());
@@ -87,7 +100,7 @@ public class ServletCommandSink extends HttpServlet {
 
                 try {
                     // Some command to process ?
-                    if(method.equals(ServletCommandSinkClient.PROCESS_COMMAND)) {
+                    if(method.equals(ServletCommandSinkIdentifier.PROCESS_COMMAND)) {
                         // Read parameter objects
                         Long connuid = (Long)ois.readObject();
                         Long uid = (Long)ois.readObject();
@@ -95,7 +108,7 @@ public class ServletCommandSink extends HttpServlet {
                         CallingContext ctx = (CallingContext) ois.readObject();
                         // Delegate execution to the CommandProcessor
                         objectToReturn = _processor.process(connuid, uid, cmd, ctx);
-                    } else if(method.equals(ServletCommandSinkClient.CONNECT_COMMAND)) {
+                    } else if(method.equals(ServletCommandSinkIdentifier.CONNECT_COMMAND)) {
                         String url = ois.readUTF();
                         Properties props = (Properties) ois.readObject();
                         Properties clientInfo = (Properties) ois.readObject();

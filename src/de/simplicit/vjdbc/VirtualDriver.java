@@ -34,7 +34,10 @@ import de.simplicit.vjdbc.rmi.ConnectionBrokerRmi;
 import de.simplicit.vjdbc.rmi.SecureSocketFactory;
 import de.simplicit.vjdbc.serial.CallingContext;
 import de.simplicit.vjdbc.serial.UIDEx;
-import de.simplicit.vjdbc.servlet.ServletCommandSinkClient;
+import de.simplicit.vjdbc.servlet.RequestEnhancer;
+import de.simplicit.vjdbc.servlet.RequestEnhancerFactory;
+import de.simplicit.vjdbc.servlet.ServletCommandSinkJdkHttpClient;
+import de.simplicit.vjdbc.servlet.jakarta.ServletCommandSinkJakartaHttpClient;
 import de.simplicit.vjdbc.util.ClientInfo;
 import de.simplicit.vjdbc.util.SQLExceptionHelper;
 
@@ -109,7 +112,7 @@ public final class VirtualDriver implements Driver {
                 } else if(realUrl.startsWith(SERVLET_IDENTIFIER)) {
                     urlparts = split(realUrl.substring(SERVLET_IDENTIFIER.length()));
                     _logger.info("VJdbc in Servlet-Mode, using URL " + urlparts[0]);
-                    sink = createServletCommandSink(urlparts[0]);
+                    sink = createServletCommandSink(urlparts[0], props);
                 } else {
                     throw new SQLException("Unknown protocol identifier " + realUrl);
                 }
@@ -193,23 +196,41 @@ public final class VirtualDriver implements Driver {
         return new EjbCommandSinkProxy(sink);
     }
 
-    private CommandSink createServletCommandSink(String url) throws Exception {
-        return new ServletCommandSinkClient(url);
+    private CommandSink createServletCommandSink(String url, Properties props) throws Exception {
+        RequestEnhancer requestEnhancer = null;
+        
+        String requestEnhancerFactoryClassName = props.getProperty(VJdbcProperties.SERVLET_REQUEST_ENHANCER_FACTORY);
+        
+        if(requestEnhancerFactoryClassName != null) {
+            _logger.debug("Found RequestEnhancerFactory class: " + requestEnhancerFactoryClassName);
+            Class requestEnhancerFactoryClass = Class.forName(requestEnhancerFactoryClassName);
+            RequestEnhancerFactory requestEnhancerFactory = (RequestEnhancerFactory)requestEnhancerFactoryClass.newInstance();
+            _logger.debug("RequestEnhancerFactory successfully created");
+            requestEnhancer = requestEnhancerFactory.create();
+        }
+
+        // Decide here if we should use Jakarta-HTTP-Client
+        String useJakartaHttpClient = props.getProperty(VJdbcProperties.SERVLET_USE_JAKARTA_HTTP_CLIENT);
+        if(useJakartaHttpClient != null && useJakartaHttpClient.equals("true")) {
+            return new ServletCommandSinkJakartaHttpClient(url, requestEnhancer);
+        }
+        else {
+            return new ServletCommandSinkJdkHttpClient(url, requestEnhancer);
+        }
     }
     
     // Helper method (can't use the 1.4-Method because support for 1.3 is desired)
     private String[] split(String url) {
-        String[] parts = new String[2];
+        char[] splitChars = { ',', ';', '#', '$', '§' };
 
-        int colonindex = url.indexOf(',');
-        if(colonindex >= 0) {
-            parts[0] = url.substring(0, colonindex);
-            parts[1] = url.substring(colonindex + 1);
-        } else {
-            parts[0] = url;
-            parts[1] = "";
+        for(int i = 0; i < splitChars.length; i++) {
+            int charindex = url.indexOf(splitChars[i]);
+            
+            if(charindex >= 0) {
+                return new String[] { url.substring(0, charindex), url.substring(charindex + 1) };
+            }
         }
-
-        return parts;
+        
+        return new String[] { url, "" };
     }
 }

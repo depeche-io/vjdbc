@@ -25,7 +25,6 @@ public class VJdbcConfiguration {
 
     private OcctConfiguration _occtConfiguration = new OcctConfiguration();
     private RmiConfiguration _rmiConfiguration;
-    private JBossRemotingConfiguration _jbossRemotingConfiguration;
     private List _connections = new ArrayList();
 
     /**
@@ -126,14 +125,6 @@ public class VJdbcConfiguration {
         _rmiConfiguration = rmiConfiguration;
     }
     
-    public JBossRemotingConfiguration getJBossRemotingConfiguration() {
-        return _jbossRemotingConfiguration;
-    }
-
-    public void setJBossRemotingConfiguration(JBossRemotingConfiguration jbossRemotingConfiguration) {
-        _jbossRemotingConfiguration = jbossRemotingConfiguration;
-    }
-
     /**
      * Returns a ConnectionConfiguration for a specific identifier.
      * @param name Identifier of the ConnectionConfiguration
@@ -199,12 +190,6 @@ public class VJdbcConfiguration {
                 "setRmiConfiguration",
                 RmiConfiguration.class.getName());
 
-        digester.addObjectCreate("vjdbc-configuration/jbossremoting", JBossRemotingConfiguration.class);
-        digester.addSetProperties("vjdbc-configuration/jbossremoting");
-        digester.addSetNext("vjdbc-configuration/jbossremoting",
-                "setJBossRemotingConfiguration",
-                JBossRemotingConfiguration.class.getName());
-
         digester.addObjectCreate("vjdbc-configuration/connection", DigesterConnectionConfiguration.class);
         digester.addSetProperties("vjdbc-configuration/connection");
         digester.addSetNext("vjdbc-configuration/connection",
@@ -244,9 +229,6 @@ public class VJdbcConfiguration {
     private void log() {
         if(_rmiConfiguration != null) {
             _rmiConfiguration.log();
-        }
-        if(_jbossRemotingConfiguration != null) {
-            _jbossRemotingConfiguration.log();
         }
         _occtConfiguration.log();
         for(Iterator it = _connections.iterator(); it.hasNext();) {

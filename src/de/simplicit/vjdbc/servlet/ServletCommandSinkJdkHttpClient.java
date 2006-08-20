@@ -4,33 +4,21 @@
 
 package de.simplicit.vjdbc.servlet;
 
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.HttpURLConnection;
-import java.net.URL;
 import java.sql.SQLException;
 import java.util.Properties;
 
 import de.simplicit.vjdbc.command.Command;
-import de.simplicit.vjdbc.command.CommandSink;
 import de.simplicit.vjdbc.serial.CallingContext;
 import de.simplicit.vjdbc.serial.UIDEx;
 import de.simplicit.vjdbc.util.SQLExceptionHelper;
+import de.simplicit.vjdbc.util.StreamCloser;
 
-public class ServletCommandSinkClient implements CommandSink {
-    private URL _url;
-
-    public static String METHOD_IDENTIFIER = "vjdbc-method";
-    public static String CONNECT_COMMAND = "connect";
-    public static String PROCESS_COMMAND = "process";    
-
-    public ServletCommandSinkClient(String url) throws SQLException {
-        try {
-            _url = new URL(url);
-        } catch(IOException e) {
-            throw SQLExceptionHelper.wrap(e);
-        }
+public class ServletCommandSinkJdkHttpClient extends AbstractServletCommandSinkClient {   
+    public ServletCommandSinkJdkHttpClient(String url, RequestEnhancer requestEnhancer) throws SQLException {
+        super(url, requestEnhancer);
     }
 
     public UIDEx connect(String database, Properties props, Properties clientInfo, CallingContext ctx) throws SQLException {
@@ -46,9 +34,13 @@ public class ServletCommandSinkClient implements CommandSink {
             conn.setRequestMethod("POST");
             conn.setAllowUserInteraction(false); // system may not ask the user
             conn.setUseCaches(false);
-            conn.setRequestProperty( "Content-type", "binary/x-java-serialized" );
-            conn.setRequestProperty(ServletCommandSinkClient.METHOD_IDENTIFIER,
-                                    ServletCommandSinkClient.CONNECT_COMMAND);
+            conn.setRequestProperty("Content-type", "binary/x-java-serialized" );
+            conn.setRequestProperty(ServletCommandSinkIdentifier.METHOD_IDENTIFIER,
+                                    ServletCommandSinkIdentifier.CONNECT_COMMAND);
+            // Finally let the optional Request-Enhancer set request properties
+            if(_requestEnhancer != null) {
+                _requestEnhancer.enhanceConnectRequest(new RequestModifierJdk(conn));
+            }
             // Write the parameter objects to the ObjectOutputStream
             oos = new ObjectOutputStream(conn.getOutputStream());
             oos.writeUTF(database);
@@ -74,16 +66,9 @@ public class ServletCommandSinkClient implements CommandSink {
             throw SQLExceptionHelper.wrap(e);
         } finally {
             // Cleanup resources
-            if(oos != null) {
-                try {
-                    oos.close();
-                } catch (IOException e) { ; }
-            }
-            if(ois != null) {
-                try {
-                    ois.close();
-                } catch (IOException e) { ; }
-            }
+            StreamCloser.close(oos);
+            StreamCloser.close(ois);
+            
             if(conn != null) {
                 conn.disconnect();
             }
@@ -100,7 +85,11 @@ public class ServletCommandSinkClient implements CommandSink {
             conn.setDoOutput(true);
             conn.setDoInput(true);
             conn.setRequestMethod("POST");
-            conn.setRequestProperty(ServletCommandSinkClient.METHOD_IDENTIFIER, ServletCommandSinkClient.PROCESS_COMMAND);
+            conn.setRequestProperty(ServletCommandSinkIdentifier.METHOD_IDENTIFIER, ServletCommandSinkIdentifier.PROCESS_COMMAND);
+            // Finally let the optional Request-Enhancer set request properties
+            if(_requestEnhancer != null) {
+                _requestEnhancer.enhanceProcessRequest(new RequestModifierJdk(conn));
+            }
             conn.connect();
 
             oos = new ObjectOutputStream(conn.getOutputStream());
@@ -124,23 +113,12 @@ public class ServletCommandSinkClient implements CommandSink {
             throw SQLExceptionHelper.wrap(e);
         } finally {
             // Cleanup resources
-            if(oos != null) {
-                try {
-                    oos.close();
-                } catch (IOException e) { ; }
-            }
-            if(ois != null) {
-                try {
-                    ois.close();
-                } catch (IOException e) { ; }
-            }
+            StreamCloser.close(oos);
+            StreamCloser.close(ois);
+            
             if(conn != null) {
                 conn.disconnect();
             }
         }
-    }
-
-    public void close() {
-        // Nothing to do
     }
 }

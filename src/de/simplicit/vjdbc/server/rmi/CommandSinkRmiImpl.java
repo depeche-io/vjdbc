@@ -21,7 +21,8 @@ public class CommandSinkRmiImpl extends UnicastRemoteObject implements CommandSi
     
     private CommandProcessor _processor;
 
-    public CommandSinkRmiImpl() throws RemoteException {
+    public CommandSinkRmiImpl(int remotingPort) throws RemoteException {
+        super(remotingPort);
         _processor = CommandProcessor.getInstance();
     }
 

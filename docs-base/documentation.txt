@@ -3,7 +3,7 @@
 =================
 
 :Authors: Michael Link
-:Version: 1.6.3 (08.04.2006)
+:Version: 1.6.4 (20.08.2006)
 
 .. contents::
 .. sectnum::
@@ -26,11 +26,11 @@ Features
     
 * Command-Pattern
 
-	Most method calls on VJDBC-Objects are wrapped in Command-Objects which will 
-	then be sent to the server-component for processing over **Command-Sinks**. 
-	A Command-Sink has a very lean interface (actually two methods !) so its very 
-	easy to provide new Command-Sink-Implementations for other protocols (i.e. 
-	SOAP, XML-RPC ...).
+    Most method calls on VJDBC-Objects are wrapped in Command-Objects which will 
+    then be sent to the server-component for processing over **Command-Sinks**. 
+    A Command-Sink has a very lean interface (actually two methods !) so its very 
+    easy to provide new Command-Sink-Implementations for other protocols (i.e. 
+    SOAP, XML-RPC ...).
 
 * Different Command-Sinks provided
 
@@ -45,20 +45,20 @@ Features
 
 * Parameter batching
 
-	Parameters for prepared statements and batch updates will be collected on 
-	the client side until the statement is finally executed.
+    Parameters for prepared statements and batch updates will be collected on 
+    the client side until the statement is finally executed.
 
 * Streaming ResultSets
 
-	JDBC-ResultSets can be very large (intentionally or unintentionally). To reduce 
-	network load and thus provide a faster response ResultSets can be split up 
-	in multiple sequential row packets by a definable packet size.
+    JDBC-ResultSets can be very large (intentionally or unintentionally). To reduce 
+    network load and thus provide a faster response ResultSets can be split up 
+    in multiple sequential row packets by a definable packet size.
 
 * Caching
 
-	Some data doesn't change over the lifetime of a JDBC-Object (i.e. the metadata 
-	of a PreparedStatement). Such data will be cached on the client-side to reduce 
-	network load for repeated calls.
+    Some data doesn't change over the lifetime of a JDBC-Object (i.e. the metadata 
+    of a PreparedStatement). Such data will be cached on the client-side to reduce 
+    network load for repeated calls.
 
 * Checking for orphaned connections
 
@@ -71,9 +71,9 @@ Features
 
 * Named-Queries & Query-Filters
 
-	To make the client-server connection more secure VJDBC can be configured to only
-	allow specific queries. Additionally queries can be filtered through regular
-	expressions.
+    To make the client-server connection more secure VJDBC can be configured to only
+    allow specific queries. Additionally queries can be filtered through regular
+    expressions.
 
 Compatibility
 -------------
@@ -100,6 +100,16 @@ The RMI-URI contains the reference to the RMI-Registry and the name of the RMI-O
 
 The last part <Connection-Id> is an identifier for the JDBC connection. There can be any number of connection definitions so all clients need to identify the connection they desire to access.
 
+Instead of the comma separator you can also use the following characters to separate the URI from the Connection-Id: ; # $ § so the following connection strings are also valid
+
+    ``jdbc:vjdbc:rmi://localhost:2000/VJdbc;testdb``
+
+    ``jdbc:vjdbc:rmi://localhost:2000/VJdbc#testdb``
+    
+    ``jdbc:vjdbc:rmi://localhost:2000/VJdbc$testdb``
+    
+    ``jdbc:vjdbc:rmi://localhost:2000/VJdbc§testdb``
+
 The server-component can now be started with
 
 	``java -classpath vjdbc.jar;vjdbc_server.jar;commons-beanutils.jar;commons-collections-2.1.1.jar;commons-dbcp-1.2.1.jar;commons-digester.jar;commons-logging.jar;commons-pool-1.2.jar;jakarta-oro-2.0.8.jar;log4j-1.2.8.jar de.simplicit.vjdbc.server.rmi.ConnectionServer vjdbc_jdbcodbc_basic.xml``
@@ -109,7 +119,7 @@ The one and only argument is the configuration file which contains the connectio
 HTTP(S) using Servlets
 ----------------------
 
-VJDBC can also be used over the HTTP-Protocol by using a servlet on the server-side inside a web-container. With the exception that HTTP is used, all communication is binary encoded, there are no SOAP messages exchanged which would lead to much more network traffic.
+VJDBC can also be used over the HTTP-Protocol by using a servlet inside a web-container. With the exception that HTTP is used, all communication is binary encoded, there are no XML messages (i. e. SOAP) exchanged which would lead to much more network traffic.
 
 The connection string for servlet connections looks like this:
 
@@ -121,11 +131,36 @@ The HTTP-URL is certainly the URL to our VJDBC-Servlet, for example:
 
 The red part is the connection id which must correspond to an identifier specified in the VJDBC configuration file.
 
+Instead of the comma separator you can also use the following characters to separate the URI from the Connection-Id: ; # $ § so the following connection strings are also valid
+
+    ``jdbc:vjdbc:rmi://localhost:2000/VJdbc;testdb``
+
+    ``jdbc:vjdbc:rmi://localhost:2000/VJdbc#testdb``
+    
+    ``jdbc:vjdbc:rmi://localhost:2000/VJdbc$testdb``
+    
+    ``jdbc:vjdbc:rmi://localhost:2000/VJdbc§testdb``
+
 **Now where must the configuration file be placed ?**
 
 In previous versions of VJDBC the configuration had to be put into the environment properties of the servlet. This was quite easy to do but this type of configuration differs for each web container and its problematic when you want to set more complex or nested properties. And if you wanted to reuse the configuration of your intranet RMI server you had to mirror the properties; a quite harsh violation of the DRY principle :-)
 
-Now the configuration is totally external and thus portable. The VJDBC-Servlet searches for the file /WEB-INF/vjdbc-config.xml. Place the configuration file there and everything works exactly the same as the RMI version.
+Now the configuration is totally external and thus portable. By default the VJDBC-Servlet searches for the file /WEB-INF/vjdbc-config.xml. Place the configuration file there and everything works exactly the same as the RMI version.
+
+If you want to place the configuration in a different location or want to rename it you can use the servlet init parameter 'config-resource'. The value of this parameter must match the requirements of ServletContext.getResource(). Example:
+
+::
+
+    <web-app>
+    ...
+        <servlet>
+            <servlet-name>VJdbcServlet</servlet-name>
+            <servlet-class>de.simplicit.vjdbc.server.servlet.ServletCommandSink</servlet-class>
+            <init-param>
+                <param-name>config-resource</param-name>
+                <param-value>/WEB-INF/config/what-a-config.xml</param-value>
+            </init-param>
+        </servlet>
 
 **VJDBC & Load-Balancing**
 
@@ -146,12 +181,12 @@ Configuration & Usage
 Introduction
 ------------
 
-Configuration of VJDBC is now XML based. The XML structure is translated into configuration objects by Jakarta-Digester, so VJDBC can also be configured completely programatically (more on that topic later). Most of the properties you can use have meaningful default values. This is what the simplest configuration file can look like
+Configuration of VJDBC is XML based. The XML structure is translated into configuration objects by Jakarta-Digester, so VJDBC can also be configured completely programatically (more on that topic later). Most of the properties you can use have meaningful default values. This is what the simplest configuration file can look like
 
 ::
 
 	<vjdbc-configuration>
-	  <connection id="testdb" driver="sun.jdbc.odbc.JdbcOdbcDriver" url="jdbc:odbc:testdb"/>
+        <connection id="testdb" driver="sun.jdbc.odbc.JdbcOdbcDriver" url="jdbc:odbc:testdb"/>
 	</vjdbc-configuration>
 
 There is the root element called ``<vjdbc-configuration>``. It can list as many connections as you want, each with its own set of properties. You can even mix the native drivers. A more complex example for a configuration:
@@ -200,9 +235,13 @@ The following XML-Tags are used to configure VJDBC with a configuration file. Re
 
     Name to be used for registration of the RMI-Object.
 
-  + port (2000)
+  + registryPort (2000)
 
     Port of the RMI-Registry.
+
+  + remotingPort (0)
+
+    Port which is used by the remote objects to listen for client requests. By default the value is 0 which means RMI uses an anonymous port. If you must pass a firewall it is probable that you need to set this value to a fixed port number provided by your network administrator.
 
   + createRegistry (true)
 
@@ -425,6 +464,14 @@ You can set different VJDBC-specific properties in the Properties-Object that is
 
   Signaling using of SSL sockets for RMI communication (true or false, default: false)
 
+* VJdbcProperties.SERVLET_USE_JAKARTA_HTTP_CLIENT
+
+  Switch to use Jakarta HttpClient to connect to the VJDBC-Servlet (true or false, default: false). The commons-httpclient and commons-codec jars must be included in the classpath of the client.
+
+* VJdbcProperties.SERVLET_REQUEST_ENHANCER_FACTORY
+
+  Name of a class that implements the de.simplicit.vjdbc.servlet.RequestEnhancerFactory interface. If this property is set VJDBC will call the implementing class to create a RequestEnhancer for each VJDBC-Servlet-Connection. See `Using Request-Enhancers`_ for more details.
+
 * VJdbcProperties.CACHE_TABLES
   
   List of tables which will be cached on the client by using HSQL-DB. Format of the string is ``{tablename[:refresh-interval],tablename[:refresh-interval]...}``
@@ -644,6 +691,55 @@ By combining Named-Queries and Query-Filters you can make your application flexi
     </query-filters>
 
 Here all Delete- and Drop-Statements are denied except the one specified in the Named-Query.
+
+Using Request-Enhancers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+When you use VJDBC in Servlet-Mode each command that is sent to the server is actually an HTTP-Post-Request containing the usual data like request headers plus the request body containing the serialized VJDBC-Command.
+
+There is a limited possibility to enhance these HTTP-Requests to transport your own application-specific connection data. This can be useful to send authentication information like cookies to the HTTP-Server (authentication besides the database authentication isn't handled by VJDBC). 
+
+Say you want to add an authentication cookie to each HTTP request. First you must implement the actual RequestEnhancer by implementing the corresponding interface. The following example shows that the RequestEnhancer must actually implement two methods, one for the initial connection when opening the VJDBC-Connection and one for each command that is processed over this connection. Each of these methods will be passed a RequestModifier object which currently has only one method called addRequestHeader(String key, String value).
+
+::
+	
+    package com.startup;
+
+    public class TestRequestEnhancer implements RequestEnhancer {
+        public void enhanceConnectRequest(RequestModifier requestModifier) {
+            // Here add the code for modification of the request, i. e.
+            requestModifier.addRequestHeader("connect-test-property", "connect-test-value");
+        }
+        
+        public void enhanceProcessRequest(RequestModifier requestModifier) {
+            // Here add the code for modification of the request, i. e.
+            requestModifier.addRequestHeader("process-test-property", "process-test-value");
+        }
+    }
+
+After implementing the RequestEnhancer a second class must be provided which is a simple factory class that is used to instantiate your RequestEnhancer implementation. This class, the RequestEnhancerFactory is actually trivial to implement.
+
+::
+
+    package com.startup;
+	
+    public class TestRequestEnhancerFactory implements RequestEnhancerFactory {
+        public RequestEnhancer create() {
+            return new TestRequestEnhancer();
+        }
+    }
+
+Finally you must tell VJDBC to use your RequestEnhancer implementations by setting the corresponding property when opening the connection.
+
+::
+
+	...
+	Properties props = new Properties();
+	props.setProperty(VJdbcProperties.SERVLET_REQUEST_ENHANCER_FACTORY, "com.startup.TestRequestEnhancerFactory");
+	Connection conn = DriverManager.getConnection(url, props);
+	...
+    
+Request-Enhancing is implemented in a generic way for both JDK-URLConnection and Jakarta-HttpClient. You don't need to change the enhancer when you switch from URLConnection to HttpClient and vice versa.
 
 Logging
 -------

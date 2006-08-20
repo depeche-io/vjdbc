@@ -3,6 +3,18 @@
 <project name="VJdbc-Sf" basedir="." default="generateJars">
 	<property file="versioninfo.properties"/>
     <property name="tmpdir" value="builddir"/>
+	
+	<!-- Compiler switches -->
+	<property name="release" value="on"/>
+	<condition property="distribution_allowed">
+		<istrue value="${release}"/>
+	</condition>
+	<condition property="debug" value="on">
+		<istrue value="${release}"/>
+	</condition>
+	<condition property="optimize" value="off">
+		<istrue value="${release}"/>
+	</condition>
 
     <target name="init">
         <mkdir dir="${tmpdir}/class"/>
@@ -19,7 +31,7 @@
     </target>
 
     <target name="compile" depends="init">
-        <javac srcdir="src" destdir="${tmpdir}/class" debug="true">
+        <javac srcdir="src" destdir="${tmpdir}/class" debug="${debug}" optimize="${optimize}">
             <classpath>
                 <fileset dir="lib" includes="*.jar"/>
                 <fileset dir="test" includes="*.jar"/>
@@ -35,6 +47,11 @@
 
     <!-- Generate normal JARs (this is NOT an EJB-JAR) -->
     <target name="generateJars" depends="compile">
+    	<!-- Condition for exclusion of test classes -->
+    	<condition property="exclude_tests" value="de/simplicit/vjdbc/test/**">
+    		<istrue value="${release}"/>
+    	</condition>
+    	
         <!-- Delete old files -->
         <delete file="lib/vjdbc.jar" failonerror="false"/>
         <delete file="lib/vjdbc_server.jar" failonerror="false"/>
@@ -43,8 +60,8 @@
         <jar destfile="lib/vjdbc.jar">
             <fileset dir="${tmpdir}/class">
                 <include name="de/simplicit/vjdbc/**"/>
-                <exclude name="de/simplicit/vjdbc/test/**"/>
                 <exclude name="de/simplicit/vjdbc/server/**"/>
+                <exclude name="${exclude_tests}"/>
             </fileset>
             <!-- The RMI stubs must be included explicitly -->
             <fileset dir="${tmpdir}/class">
@@ -54,7 +71,7 @@
         <!-- ... now the server JAR -->
         <jar basedir="${tmpdir}/class" destfile="lib/vjdbc_server.jar"
             includes="de/simplicit/vjdbc/server/**"
-            excludes="de/simplicit/vjdbc/test/**"/>
+            excludes="${exclude_tests}"/>
     </target>
 
     <!-- Generate EJB-JAR which depends on the previously created JAR -->
@@ -101,6 +118,8 @@
 
     <!-- Package the VJDBC-distribution -->
     <target name="distribution" depends="generateJars">
+    	<fail message="This build is still marked as 'in development', set 'release' property to 'true' if you want to build a distribution !" unless="distribution_allowed"/>
+    	
         <property name="distdirname" value="vjdbc_${version.major}_${version.minor}_${version.build}"/>
         <property name="distfilename" value="${distdirname}.zip"/>
         <property name="distdir" value="${tmpdir}/${distdirname}"/>
@@ -112,7 +131,8 @@
             <fileset dir="." includes="conf/**" excludes="conf/lgpl.txt" />
             <fileset dir="conf" includes="lgpl.txt"/>
             <fileset dir="." includes="build.xml,readme.txt,changelog.txt"/>
-            <fileset dir="." includes="lib/**" excludes="lib/log4j-1.2.8.jar" />
+            <fileset dir="." includes="lib/**" 
+            				 excludes="lib/log4j-1.2.8.jar" />
             <fileset dir="." includes="docs/**" excludes="docs/ppt/**,**/Thumbs.db" />
             <fileset dir="." includes="src/**" excludes="src/**/test/*" />
             <fileset dir="." includes="deploy/readme.txt"/>

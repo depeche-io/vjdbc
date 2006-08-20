@@ -66,6 +66,8 @@ public abstract class AddressTest extends VJdbcTest {
         pstmt.close();
         
         stmt.executeUpdate("create table SomeBlobs (id int, description binary(100))");
+        stmt.close();
+        
         pstmt = connVJdbc.prepareStatement("insert into SomeBlobs values (?, ?)");
         for(int i = 0; i < 10; i++) {
             pstmt.setInt(1, i);
@@ -73,6 +75,7 @@ public abstract class AddressTest extends VJdbcTest {
             pstmt.addBatch();
         }
         updates = pstmt.executeBatch();
+        pstmt.close();
         
         connVJdbc.close();
     }
@@ -85,8 +88,7 @@ public abstract class AddressTest extends VJdbcTest {
             assertEquals(i++, rs.getInt(1));
         }
         assertEquals(NUMBER_OF_ADDRESSES, i);
-        // Removed closing of the ResultSet to trigger orphaned-object-tracing
-        // rs.close();
+        rs.close();
         pstmt.close();
     }
     
@@ -177,7 +179,8 @@ public abstract class AddressTest extends VJdbcTest {
             }
         });
         t.start();
-        stmt.executeQuery("select * from Address a, Address b where a.id = b.id");
+        ResultSet rs = stmt.executeQuery("select * from Address a, Address b where a.id = b.id");
+        rs.close();
         stmt.close();
         t.join();
     }
@@ -269,11 +272,14 @@ public abstract class AddressTest extends VJdbcTest {
         assertTrue(rs.next());
         int count1 = rs.getInt(1);
         assertEquals(count1, NUMBER_OF_ADDRESSES);
+        rs.close();
         stmt.execute("select count(*) from Address");
         rs = stmt.getResultSet();
         assertTrue(rs.next());
         int count2 = rs.getInt(1);
-        assertEquals(count2, NUMBER_OF_ADDRESSES);        
+        assertEquals(count2, NUMBER_OF_ADDRESSES);     
+        rs.close();
+        stmt.close();
     }
     
     public void testPerformance() throws Exception {

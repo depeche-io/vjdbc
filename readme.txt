@@ -11,17 +11,19 @@ Required JARs are distributed in the lib subdirectory.
 
 For usage on the client you only need the following JAR files:
    vjdbc.jar
-   commons-logging.jar
+   commons-logging-1.1.jar
+   commons-httpclient-3.0.1.jar (optional, replacement for JDK-URLConnections)
+   commons-codec-1.3.jar (optional when Jakarta HttpClient is used)
 
 A VJDBC server component needs the following JARs:
    vjdbc.jar
    vjdbc_server.jar
-   commons-beanutils.jar
-   commons-collections-2.1.1.jar
+   commons-beanutils-core.jar
+   commons-collections-3.2.jar
    commons-dbcp-1.2.1.jar
-   commons-digester.jar
-   commons-logging.jar
-   commons-pool-1.2.jar
+   commons-digester-1.7.jar
+   commons-logging-1.1.jar
+   commons-pool-1.3.jar
    jakarta-oro-2.0.8.jar
    log4j-1.2.8.jar (optional)
    + the JAR(s) containing the native JDBC driver(s)

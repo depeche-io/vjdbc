@@ -23,6 +23,7 @@ import java.sql.Types;
 import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Enumeration;
 import java.util.Properties;
 
 import junit.framework.Test;
@@ -61,13 +62,11 @@ public abstract class VJdbcTest extends TestCase {
     }
 
     protected Connection createVJdbcConnection() throws SQLException {
-        Properties props = new Properties();
-        props.setProperty(VJdbcProperties.CLIENTINFO_PROPERTIES, "user.name;java.version;os.name");
         String connectionUrl = System.getProperty("VJDBC_CONNECTION_URL");
         if(connectionUrl == null) {
             throw new SQLException("System-Property VJDBC_CONNECTION_URL not set");
         }
-        Connection conn = DriverManager.getConnection(connectionUrl + "," + getVJdbcDatabaseShortcut(), props);
+        Connection conn = DriverManager.getConnection(connectionUrl + "#" + getVJdbcDatabaseShortcut(), getVJdbcProperties());
         conn.setAutoCommit(true);
         return conn;
     }
@@ -75,6 +74,21 @@ public abstract class VJdbcTest extends TestCase {
     protected abstract Connection createNativeDatabaseConnection() throws Exception;
 
     protected abstract String getVJdbcDatabaseShortcut();
+    
+    protected Properties getVJdbcProperties() {
+        Properties props = new Properties();
+        props.setProperty(VJdbcProperties.CLIENTINFO_PROPERTIES, "user.name;java.version;os.name");
+        
+        Properties systemProps = System.getProperties();
+        for(Enumeration e = systemProps.keys(); e.hasMoreElements();)
+        {
+            String keyName = (String)e.nextElement();
+            if(keyName.startsWith("vjdbc")) {
+                props.setProperty(keyName, systemProps.getProperty(keyName));
+            }
+        }
+        return props;
+    }
 
     protected void dropTables(Statement stmt, String[] tables) {
         for(int i = 0; i < tables.length; i++) {

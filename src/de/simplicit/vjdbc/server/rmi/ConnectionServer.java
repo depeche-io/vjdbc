@@ -66,7 +66,7 @@ public class ConnectionServer {
         installShutdownHook();
 
         _logger.info("Binding remote object to '" + _rmiConfiguration.getObjectName() + "'");
-        _registry.rebind(_rmiConfiguration.getObjectName(), new ConnectionBrokerRmiImpl());
+        _registry.rebind(_rmiConfiguration.getObjectName(), new ConnectionBrokerRmiImpl(_rmiConfiguration.getRemotingPort()));
     }
 
     private void installShutdownHook() {

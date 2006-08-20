@@ -22,18 +22,27 @@ public class CommandSinkRmiProxy implements CommandSink {
     }
 
     public UIDEx connect(String url, Properties props, Properties clientInfo, CallingContext ctx) throws SQLException {
-        try {
-            return _targetSink.connect(url, props, clientInfo, ctx);
-        } catch(RemoteException e) {
-            throw SQLExceptionHelper.wrap(e);
+        if(_targetSink != null) {
+            try {
+                return _targetSink.connect(url, props, clientInfo, ctx);
+            } catch (RemoteException e) {
+                throw SQLExceptionHelper.wrap(e);
+            }
+        }
+        else {
+            throw new SQLException("Connection is already closed");
         }
     }
 
     public Object process(Long connuid, Long uid, Command cmd, CallingContext ctx) throws SQLException {
-        try {
-            return _targetSink.process(connuid, uid, cmd, ctx);
-        } catch(RemoteException e) {
-            throw SQLExceptionHelper.wrap(e);
+        if(_targetSink != null) {
+            try {
+                return _targetSink.process(connuid, uid, cmd, ctx);
+            } catch (RemoteException e) {
+                throw SQLExceptionHelper.wrap(e);
+            }
+        } else {
+            throw new SQLException("Connection is already closed");
         }
     }
 

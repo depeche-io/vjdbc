@@ -6,6 +6,26 @@ BUG = Resolved bug
 OPT = Optimization
 CLN = Cleanup/Refactoring
 
+Release 1.6.4 (19 Aug 2006)
+---------------------------
+* FEA: Jakarta-HttpClient can be used as a drop-in replacement for the JDK classes. See chapter
+       'Client-Side Properties' for more information.
+* FEA: HTTP-Request can now be enhanced with own request headers by implementing a RequestEnhancer that
+       is called back before the actual HTTP-Request is made. See chapter 'Using Request-Enhancers' in
+       the reference documentation.
+* FEA: In Servlet-Mode the location of the config resource can be configured by setting the init 
+       parameter 'config-resource' in the web.xml of the VJDBC-Servlet.
+* FEA: RMI-Configuration now supports the remotingPort-Attribute to specify which server port is used by
+       the remote objects to listen for incoming client requests.
+* FEA: Statement.cancel() can be called asynchronously to interrupt running queries (if supported by the
+       native database driver)
+* FEA: VJDBC-URLs now can use other split characters than comma
+* BUG: Vendor-specific SQLExceptions were sliced of their information (thx again to John V. Sichi)
+* BUG: Setting scale of BigDecimal in the StreamingResultSet
+* CLN: RMI-Configuration attribute 'port' was renamed to 'registryPort' because of the mixup with the new
+       'remotingPort' attribute. 'port' is still supported to prevent breaking changes.
+* CLN: Upgraded to the current Jakarta-Commons libraries
+
 Release 1.6.3 (08 Apr 2006)
 ---------------------------
 * FEA: Now using SVN-Support of SourceForge
