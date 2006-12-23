@@ -19,6 +19,7 @@ import java.util.ArrayList;
  * A RowPacket contains the data of a part (or a whole) JDBC-ResultSet.
  */
 public class RowPacket implements Externalizable {
+    private static final int ORACLE_ROW_ID = -8;
     private static final int DEFAULT_ARRAY_SIZE = 100;
     static final long serialVersionUID = 6366194574502000718L;
 
@@ -190,6 +191,10 @@ public class RowPacket implements Externalizable {
                 case Types.STRUCT:
                     _flattenedColumnsValues[internalIndex].setObject(_rowCount, new SerialStruct((Struct) rs.getObject(i)));
                     break;
+                    
+                case ORACLE_ROW_ID:
+                    _flattenedColumnsValues[internalIndex].setObject(_rowCount, rs.getString(i));
+                    break; 
 
                 default:
                     if(JavaVersionInfo.use14Api) {
