@@ -34,7 +34,7 @@ public class StreamingResultSet implements ResultSet, Externalizable {
     private UIDEx _remainingResultSet = null;
     private SerialResultSetMetaData _metaData = null;
     
-    private transient DecoratedCommandSink _commandSink;
+    private transient DecoratedCommandSink _commandSink = null;
     private transient int _cursor = -1;
     private transient int _lastReadColumn = 0;
     private transient Object[] _actualRow;
@@ -163,7 +163,12 @@ public class StreamingResultSet implements ResultSet, Externalizable {
     public void close() throws SQLException {
         _cursor = -1;
         if(_remainingResultSet != null) {
-            _commandSink.process(_remainingResultSet, new DestroyCommand(_remainingResultSet, JdbcInterfaceType.RESULTSETHOLDER));
+            // The server-side created StreamingResultSet is garbage-collected after it was send over the wire. Thus
+            // we have to check here if it is such a server object because in this case we don't have to try the remote
+            // call which indeed causes a NPE.
+            if(_commandSink != null) {
+                _commandSink.process(_remainingResultSet, new DestroyCommand(_remainingResultSet, JdbcInterfaceType.RESULTSETHOLDER));
+            }
             _remainingResultSet = null;
         }
     }
