@@ -73,8 +73,8 @@ public class ConnectionPoolConfiguration {
         _logger.info("    Max. active connections .............. " + _maxActive);
         _logger.info("    Max. number of idle connections ...... " + _maxIdle);
         _logger.info("    Min. number of idle connections ...... " + _minIdle);
-        _logger.info("    Max. waiting time for connections .... " + ConfigurationUtil.getTimeFromMillis(_maxWait));
-        _logger.info("    Time between eviction runs ........... " + ConfigurationUtil.getTimeFromMillis(_timeBetweenEvictionRunsMillis));
-        _logger.info("    Min. idle time before eviction ....... " + ConfigurationUtil.getTimeFromMillis(_minEvictableIdleTimeMillis));
+        _logger.info("    Max. waiting time for connections .... " + ConfigurationUtil.getStringFromMillis(_maxWait));
+        _logger.info("    Time between eviction runs ........... " + ConfigurationUtil.getStringFromMillis(_timeBetweenEvictionRunsMillis));
+        _logger.info("    Min. idle time before eviction ....... " + ConfigurationUtil.getStringFromMillis(_minEvictableIdleTimeMillis));
     }
 }
