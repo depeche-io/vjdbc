@@ -61,7 +61,7 @@ public class QueryFilterConfiguration {
                 if(matched) {
                     if(filter._isDenyFilter) {
                         String msg = "SQL [" + sql + "] is denied due to Deny-Filter [" + filter._regExp + "]";
-                        _logger.error(msg);
+                        _logger.warn(msg);
                         throw new SQLException(msg);
                     } else {
                         if(_logger.isDebugEnabled()) {
