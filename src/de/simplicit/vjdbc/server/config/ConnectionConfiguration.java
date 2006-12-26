@@ -8,6 +8,9 @@ import de.simplicit.vjdbc.VJdbcException;
 import de.simplicit.vjdbc.VJdbcProperties;
 import de.simplicit.vjdbc.server.DataSourceProvider;
 import de.simplicit.vjdbc.server.LoginHandler;
+import de.simplicit.vjdbc.server.concurrent.Executor;
+import de.simplicit.vjdbc.server.concurrent.PooledExecutor;
+
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp.PoolableConnectionFactory;
@@ -23,7 +26,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 import java.util.zip.Deflater;
 
-public class ConnectionConfiguration {
+public class ConnectionConfiguration implements Executor {
     private static Log _logger = LogFactory.getLog(ConnectionConfiguration.class);
     private static final String DBCP_ID = "jdbc:apache:commons:dbcp:";
 
@@ -58,10 +61,13 @@ public class ConnectionConfiguration {
     // Query filters
     protected QueryFilterConfiguration _queryFilters;
 
-    // Pooling support
+    // Connection pooling support
     private boolean _driverInitialized = false;
     private Boolean _connectionPoolInitialized = Boolean.FALSE;
     private GenericObjectPool _connectionPool = null;
+    // Thread pooling support
+    private int _maxThreadPoolSize = 8;
+    private PooledExecutor _pooledExecutor = new PooledExecutor(_maxThreadPoolSize);
 
     public String getId() {
         return _id;
@@ -471,5 +477,9 @@ public class ConnectionConfiguration {
 
             _logger.debug("... successful");
         }
+    }
+
+    public void execute(Runnable command) throws InterruptedException {
+        _pooledExecutor.execute(command);
     }
 }
