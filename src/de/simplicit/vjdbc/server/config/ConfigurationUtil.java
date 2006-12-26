@@ -14,17 +14,17 @@ class ConfigurationUtil {
 
     static long getMillisFromString(String value) {
         if(value.endsWith("s")) {
-            return Long.parseLong(value.substring(0, value.length()-1)) * 1000;
+            return Long.parseLong(value.substring(0, value.length()-1)) * MILLIS_PER_SECOND;
         }
         else if(value.endsWith("m")) {
-            return Long.parseLong(value.substring(0, value.length()-1)) * 1000 * 60;
+            return Long.parseLong(value.substring(0, value.length()-1)) * MILLIS_PER_MINUTE;
         }
         else {
             return Long.parseLong(value);
         }
     }
     
-    static String getTimeFromMillis(long value) {
+    static String getStringFromMillis(long value) {
         if( (value % MILLIS_PER_MINUTE) == 0) {
             return "" + (value / MILLIS_PER_MINUTE) + " min";
         }
