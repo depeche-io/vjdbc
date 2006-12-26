@@ -48,8 +48,8 @@ public class OcctConfiguration {
     void log() {
         if(_checkingPeriod > 0) {
             _logger.info("OrphanedConnectionCollectorTask-Configuration (OCCT)");
-            _logger.info("  Checking-Period........... " + ConfigurationUtil.getTimeFromMillis(_checkingPeriod));
-            _logger.info("  Timeout................... " + ConfigurationUtil.getTimeFromMillis(_timeout));
+            _logger.info("  Checking-Period........... " + ConfigurationUtil.getStringFromMillis(_checkingPeriod));
+            _logger.info("  Timeout................... " + ConfigurationUtil.getStringFromMillis(_timeout));
         }
         else {
             _logger.info("OrphanedConnectionCollectorTask-Configuration (OCCT): off");
