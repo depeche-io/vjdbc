@@ -25,6 +25,10 @@ public class ClobParameter implements PreparedStatementParameter {
         _value = new SerialClob(value);
     }
     
+    public SerialClob getValue() {
+        return _value;
+    }
+
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         _value = (SerialClob)in.readObject();
     }

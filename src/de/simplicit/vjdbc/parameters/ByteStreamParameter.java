@@ -28,7 +28,7 @@ public class ByteStreamParameter implements PreparedStatementParameter {
 
         BufferedInputStream s = new BufferedInputStream(x);
         try {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream(length);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream(length >= 0 ? length : 1024);
             byte buf[] = new byte[1024];
             int br;
             while((br = s.read(buf)) >= 0) {
@@ -37,6 +37,11 @@ public class ByteStreamParameter implements PreparedStatementParameter {
                 }
             }
             _value = bos.toByteArray();
+            // Adjust length to the amount of read bytes if the user provided
+            // -1 as the length parameter
+            if(_length < 0) {
+                _length = _value.length;
+            }
         } catch(IOException e) {
             throw new SQLException("InputStream conversion to byte-array failed");
         } finally {
@@ -47,6 +52,10 @@ public class ByteStreamParameter implements PreparedStatementParameter {
         }
     }
     
+    public byte[] getValue() {
+        return _value;
+    }
+
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         _type = in.readInt();
         _value = (byte[])in.readObject();

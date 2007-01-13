@@ -22,6 +22,10 @@ public class BooleanParameter implements PreparedStatementParameter {
         _value = value;
     }
     
+    public boolean getValue() {
+        return _value;
+    }
+
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         _value = in.readBoolean();
     }

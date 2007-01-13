@@ -26,6 +26,10 @@ public class CharStreamParameter implements PreparedStatementParameter {
         }
     }
     
+    public char[] getValue() {
+        return _value;
+    }
+
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         _value = (char[])in.readObject();
     }

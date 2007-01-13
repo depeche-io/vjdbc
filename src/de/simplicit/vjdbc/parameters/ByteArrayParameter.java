@@ -21,6 +21,10 @@ public class ByteArrayParameter implements PreparedStatementParameter {
     public ByteArrayParameter(byte[] value) {
         _value = value;
     }
+    
+    public byte[] getValue() {
+        return _value;
+    }
 
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         _value = (byte[])in.readObject();

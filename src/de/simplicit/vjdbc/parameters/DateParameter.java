@@ -26,6 +26,10 @@ public class DateParameter implements PreparedStatementParameter {
         _calendar = cal;
     }
 
+    public Date getValue() {
+        return _value;
+    }
+
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         _value = (Date)in.readObject();
         _calendar = (Calendar)in.readObject();

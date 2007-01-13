@@ -22,6 +22,10 @@ public class IntegerParameter implements PreparedStatementParameter {
         _value = value;
     }
     
+    public int getValue() {
+        return _value;
+    }
+
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         _value = in.readInt();
     }

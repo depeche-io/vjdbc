@@ -22,6 +22,10 @@ public class DoubleParameter implements PreparedStatementParameter {
         _value = value;
     }
     
+    public double getValue() {
+        return _value;
+    }
+
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         _value = in.readDouble();
     }

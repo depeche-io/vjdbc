@@ -23,6 +23,10 @@ public class BigDecimalParameter implements PreparedStatementParameter {
         _value = value;
     }
     
+    public BigDecimal getValue() {
+        return _value;
+    }
+
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         _value = (BigDecimal)in.readObject();
     }

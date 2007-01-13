@@ -22,6 +22,10 @@ public class FloatParameter implements PreparedStatementParameter {
         _value = value;
     }
     
+    public float getValue() {
+        return _value;
+    }
+
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         _value = in.readFloat();
     }

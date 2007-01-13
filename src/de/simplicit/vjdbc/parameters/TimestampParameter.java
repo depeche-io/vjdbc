@@ -26,6 +26,10 @@ public class TimestampParameter implements PreparedStatementParameter {
         _calendar = cal;
     }
     
+    public Timestamp getValue() {
+        return _value;
+    }
+
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         _value = (Timestamp)in.readObject();
         _calendar = (Calendar)in.readObject();

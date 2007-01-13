@@ -26,6 +26,10 @@ public class ObjectParameter implements PreparedStatementParameter {
         _scale = scale;
     }
     
+    public Object getValue() {
+        return _value;
+    }
+
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         _value = in.readObject();
         _targetSqlType = (Integer)in.readObject();

@@ -25,6 +25,10 @@ public class ArrayParameter implements PreparedStatementParameter {
         _value = new SerialArray(value);
     }
     
+    public SerialArray getValue() {
+        return _value;
+    }
+
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         _value = (SerialArray)in.readObject();
     }

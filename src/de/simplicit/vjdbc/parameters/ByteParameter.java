@@ -22,6 +22,10 @@ public class ByteParameter implements PreparedStatementParameter {
         _value = value;
     }
 
+    public byte getValue() {
+        return _value;
+    }
+
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         _value = in.readByte();
     }

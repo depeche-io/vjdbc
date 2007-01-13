@@ -22,6 +22,10 @@ public class LongParameter implements PreparedStatementParameter {
         _value = value;
     }
     
+    public long getValue() {
+        return _value;
+    }
+
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         _value = in.readLong();
     }

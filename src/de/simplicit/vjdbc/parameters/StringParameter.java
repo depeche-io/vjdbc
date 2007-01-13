@@ -22,6 +22,10 @@ public class StringParameter implements PreparedStatementParameter {
         _value = value;
     }
     
+    public String getValue() {
+        return _value;
+    }
+
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         _value = (String)in.readObject();
     }

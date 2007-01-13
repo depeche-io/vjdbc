@@ -23,6 +23,10 @@ public class URLParameter implements PreparedStatementParameter {
         _value = value;
     }
     
+    public URL getValue() {
+        return _value;
+    }
+
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         _value = (URL)in.readObject();
     }

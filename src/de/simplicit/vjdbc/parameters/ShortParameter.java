@@ -22,6 +22,10 @@ public class ShortParameter implements PreparedStatementParameter {
         _value = value;
     }
 
+    public short getValue() {
+        return _value;
+    }
+
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         _value = in.readShort();
     }
