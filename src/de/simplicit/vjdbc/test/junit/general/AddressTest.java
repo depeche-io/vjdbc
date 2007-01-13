@@ -4,6 +4,8 @@
 
 package de.simplicit.vjdbc.test.junit.general;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -20,31 +22,15 @@ public abstract class AddressTest extends VJdbcTest {
         super(s);
     }
 
-    /*
-     * static { try { RMISocketFactory.setSocketFactory(new
-     * CustomRmiSocketFactory(20000, 21000)); } catch (IOException e) { throw
-     * new RuntimeException(e); } }
-     */
-
     protected void oneTimeSetup() throws Exception {
         super.oneTimeSetup();
 
         Connection connVJdbc = createVJdbcConnection();
         Statement stmt = connVJdbc.createStatement();
         dropTables(stmt, new String[] { "Address", "SomeBlobs" });
-        stmt.executeUpdate("create table Address (" +
-        		"id int, " +
-        		"lastname varchar(100), " +
-        		"firstname char(50), " +
-        		"street varchar(200), " +
-        		"somenumber int, " +
-        		"birthday date, " +
-        		"currtime timestamp, " +
-        		"amount decimal(10,2), " +
-        		"stringboolean char(1), " +
-        		"integernumber varchar(20), " +
-        		"floatingnumber varchar(20)" +
-        		")");
+        stmt.executeUpdate("create table Address (" + "id int, " + "lastname varchar(100), " + "firstname char(50), " + "street varchar(200), "
+                + "somenumber int, " + "birthday date, " + "currtime timestamp, " + "amount decimal(10,2), " + "stringboolean char(1), "
+                + "integernumber varchar(20), " + "floatingnumber varchar(20)" + ")");
         PreparedStatement pstmt = connVJdbc.prepareStatement("insert into Address values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         for(int i = 0; i < NUMBER_OF_ADDRESSES; i++) {
             pstmt.setInt(1, i);
@@ -64,19 +50,23 @@ public abstract class AddressTest extends VJdbcTest {
         int[] updates = pstmt.executeBatch();
         assertEquals(updates.length, NUMBER_OF_ADDRESSES);
         pstmt.close();
-        
+
         stmt.executeUpdate("create table SomeBlobs (id int, description binary(100))");
         stmt.close();
-        
+
         pstmt = connVJdbc.prepareStatement("insert into SomeBlobs values (?, ?)");
-        for(int i = 0; i < 10; i++) {
-            pstmt.setInt(1, i);
-            pstmt.setBytes(2, ("Blob: " + i).getBytes());
-            pstmt.addBatch();
-        }
+        // Write with setBytes
+        pstmt.setInt(1, 1);
+        pstmt.setBytes(2, "Blob1".getBytes());
+        pstmt.addBatch();
+        // Write with setInputStream
+        pstmt.setInt(1, 2);
+        pstmt.setBinaryStream(2, new ByteArrayInputStream("Blob2".getBytes()), -1);
+        pstmt.addBatch();
+
         updates = pstmt.executeBatch();
         pstmt.close();
-        
+
         connVJdbc.close();
     }
 
@@ -91,14 +81,14 @@ public abstract class AddressTest extends VJdbcTest {
         rs.close();
         pstmt.close();
     }
-    
+
     public void testEmptyResultSet() throws Exception {
         PreparedStatement pstmt = _connVJdbc.prepareStatement("select * from Address where id > 1000000 order by id");
         ResultSet rs = pstmt.executeQuery();
         assertFalse(rs.first());
         assertFalse(rs.last());
         rs.close();
-        pstmt.close();        
+        pstmt.close();
     }
 
     public void testGettingConnectionFromStatement() throws Exception {
@@ -165,7 +155,7 @@ public abstract class AddressTest extends VJdbcTest {
         stmt1.close();
         stmt2.close();
     }
-    
+
     public void testCancelStatement() throws Exception {
         final Statement stmt = _connVJdbc.createStatement();
         Thread t = new Thread(new Runnable() {
@@ -175,7 +165,7 @@ public abstract class AddressTest extends VJdbcTest {
                     stmt.cancel();
                 } catch (Exception e) {
                     e.printStackTrace();
-                } 
+                }
             }
         });
         t.start();
@@ -191,7 +181,7 @@ public abstract class AddressTest extends VJdbcTest {
 
         ResultSet rsVJdbc = stmtVJdbc.executeQuery("select id, somenumber, stringboolean, integernumber, floatingnumber from Address");
         ResultSet rsNative = stmtNative.executeQuery("select id, somenumber, stringboolean, integernumber, floatingnumber from Address");
-        
+
         assertTrue(rsNative.next());
         assertTrue(rsVJdbc.next());
 
@@ -203,11 +193,9 @@ public abstract class AddressTest extends VJdbcTest {
         assertFalse(vIsZero);
         nIsZero = rsNative.getBoolean("stringboolean");
         vIsZero = rsVJdbc.getBoolean("stringboolean");
-        if( (nId & 1) == 0) {
+        if((nId & 1) == 0) {
             assertFalse(nIsZero);
-        }
-        else
-        {
+        } else {
             assertTrue(nIsZero);
         }
         assertEquals(nId, vId);
@@ -229,19 +217,19 @@ public abstract class AddressTest extends VJdbcTest {
         stmtVJdbc.close();
         stmtNative.close();
     }
-    
+
     public void testExceptionStacktrace() throws Exception {
         Statement stmtVJdbc = _connVJdbc.createStatement();
         try {
             stmtVJdbc.executeQuery("select * from nonexistingtable");
         } catch (SQLException e) {
-            String msg = e.getMessage().toLowerCase(); 
+            String msg = e.getMessage().toLowerCase();
             assertTrue(msg.indexOf("table not found") >= 0 || msg.indexOf("doesn't exist") >= 0);
             assertTrue(msg.indexOf("nonexistingtable") >= 0);
         }
         stmtVJdbc.close();
     }
-    
+
     public void testParallelPreparedStatements() throws Exception {
         PreparedStatement stmtVjdbc1 = _connVJdbc.prepareStatement("select id, lastname from Address where somenumber = ?");
         stmtVjdbc1.setInt(1, 34);
@@ -258,13 +246,13 @@ public abstract class AddressTest extends VJdbcTest {
         stmtVjdbc1.setInt(1, 44);
         stmtNative1.setInt(1, 44);
         compareResultSets(stmtVjdbc1.executeQuery(), stmtNative1.executeQuery());
-        
+
         stmtVjdbc1.close();
         stmtNative1.close();
         stmtVjdbc2.close();
         stmtNative2.close();
     }
-    
+
     public void testRepeatedStatementExecution() throws Exception {
         Statement stmt = _connVJdbc.createStatement();
         stmt.execute("select count(*) from Address");
@@ -277,21 +265,49 @@ public abstract class AddressTest extends VJdbcTest {
         rs = stmt.getResultSet();
         assertTrue(rs.next());
         int count2 = rs.getInt(1);
-        assertEquals(count2, NUMBER_OF_ADDRESSES);     
+        assertEquals(count2, NUMBER_OF_ADDRESSES);
         rs.close();
         stmt.close();
     }
     
+    public void testReadBlobs() throws Exception {
+        Statement stmt = _connVJdbc.createStatement();
+        ResultSet rs = stmt.executeQuery("select * from SomeBlobs");
+        assertTrue(rs.next());
+        assertEquals("Blob1", new String(rs.getBytes(2)));
+        assertTrue(rs.next());
+        InputStream is = rs.getBinaryStream(2);
+        byte[] buff = new byte[10];
+        assertEquals(5, is.read(buff, 0, buff.length));
+        assertEquals("Blob2", new String(buff, 0, 5));
+    }
+    
+    /*
+    public void testCustomResultSetQuery() throws Exception {
+        PreparedStatement pstmt = _connVJdbc.prepareStatement("#getAddress");
+        pstmt.setInt(1, 10);
+        ResultSet rs = pstmt.executeQuery();
+        for(int i = 0; i < 10; i++) {
+            assertTrue(rs.next());
+            assertEquals("Foo" + i, rs.getString(1));
+            assertEquals("Bar" + i, rs.getString(2));
+        }
+        assertFalse(rs.next());
+    }
+    */
+
+    /*
     public void testPerformance() throws Exception {
         long perfNative = measurePerformanceSingleThread(_connOther);
         long perfVJdbc = measurePerformanceSingleThread(_connVJdbc);
         System.out.println("Single-Thread (Native): " + perfNative);
-        System.out.println("Single-Thread (VJdbc):  " + perfVJdbc);
+        System.out.println("Single-Thread (VJdbc): " + perfVJdbc);
         perfNative = measurePerformanceMultipleThreads(_connOther);
         perfVJdbc = measurePerformanceMultipleThreads(_connVJdbc);
         System.out.println("Multi-Thread (Native): " + perfNative);
-        System.out.println("Multi-Thread (VJdbc):  " + perfVJdbc);
+        System.out.println("Multi-Thread (VJdbc): " + perfVJdbc);
     }
+    */
 
     private long measurePerformanceSingleThread(final Connection conn) throws Exception {
         long start = System.currentTimeMillis();
@@ -339,7 +355,7 @@ public abstract class AddressTest extends VJdbcTest {
         // Return time difference
         return System.currentTimeMillis() - start;
     }
-    
+
     /*
      * public void testExecuteMultipleResultSets() throws Exception { Connection
      * connVJdbc = null; try { connVJdbc = createVJdbcConnection(); Statement
@@ -360,4 +376,3 @@ public abstract class AddressTest extends VJdbcTest {
      * stmt1.close(); stmt2.close(); } finally { connVJdbc.close(); } }
      */
 }
-
