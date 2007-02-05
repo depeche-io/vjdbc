@@ -3,7 +3,7 @@
 =================
 
 :Authors: Michael Link
-:Version: 1.6.4 (20.08.2006)
+:Version: 1.6.5 (05.02.2007)
 
 .. contents::
 .. sectnum::
@@ -141,7 +141,8 @@ Instead of the comma separator you can also use the following characters to sepa
     
     ``jdbc:vjdbc:rmi://localhost:2000/VJdbc§testdb``
 
-**Now where must the configuration file be placed ?**
+Configuration resource
+~~~~~~~~~~~~~~~~~~~~~~
 
 In previous versions of VJDBC the configuration had to be put into the environment properties of the servlet. This was quite easy to do but this type of configuration differs for each web container and its problematic when you want to set more complex or nested properties. And if you wanted to reuse the configuration of your intranet RMI server you had to mirror the properties; a quite harsh violation of the DRY principle :-)
 
@@ -162,7 +163,30 @@ If you want to place the configuration in a different location or want to rename
             </init-param>
         </servlet>
 
-**VJDBC & Load-Balancing**
+Variables resource
+~~~~~~~~~~~~~~~~~~
+
+You can also use the configuration variables feature (see `Configuration Variables`_) to externalize specific settings within the configuration. The init parameter 'config-variables' must be specified in this case:
+
+::
+
+    <web-app>
+    ...
+        <servlet>
+            <servlet-name>VJdbcServlet</servlet-name>
+            <servlet-class>de.simplicit.vjdbc.server.servlet.ServletCommandSink</servlet-class>
+            <init-param>
+                <param-name>config-resource</param-name>
+                <param-value>/WEB-INF/config/what-a-config.xml</param-value>
+            </init-param>
+            <init-param>
+                <param-name>config-variables</param-name>
+                <param-value>/WEB-INF/config/some-variables.properties</param-value>
+            </init-param>
+        </servlet>
+
+VJDBC & Load-Balancing
+~~~~~~~~~~~~~~~~~~~~~~
 
 Because VJDBC manages the references to the real JDBC-Objects in a singleton class, it is not a good idea to use it in an environment which uses load-balancing: every JVM has its own singleton object and it's not predictable which servlet container will be invoked.
 
@@ -399,6 +423,26 @@ The following XML-Tags are used to configure VJDBC with a configuration file. Re
        is used
 
 .. [2] If User/Password isn't specified in the configuration the VJDBC client must provide these properties
+
+Configuration Variables
+-----------------------
+
+Often there is a need to replace several settings in the configuration file with values specified during the deployment process. For example, you develop and test with the RMI registry running on port 2000, but in production you must use 3000. Instead of maintaining two almost identical configuration files or doing some magic during the deployment process you can use configuration variables. Configuration variables are specified in a seperate properties file and can replace almost any value within the configuration file.
+
+Here is an example which covers the mentioned use case with the registry port + specifying a different remoting port.
+
+::
+
+    <vjdbc-configuration>
+        <rmi registryPort="${rmi.registryPort}" remotingPort="${rmi.remotingPort}"/>
+        ...
+
+Now you have to provide an additional properties file that contains all variables that are used in the configuration.
+
+::
+
+    rmi.registryPort=2001
+    rmi.remotingPort=9092
 
 Programmatic Configuration
 --------------------------
