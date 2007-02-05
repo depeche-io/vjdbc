@@ -10,12 +10,14 @@ import de.simplicit.vjdbc.server.config.VJdbcConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.RMISocketFactory;
+import java.util.Properties;
 
 public class ConnectionServer {
     private static Log _logger = LogFactory.getLog(ConnectionServer.class);
@@ -27,21 +29,34 @@ public class ConnectionServer {
         try {
             if(args.length == 1) {
                 VJdbcConfiguration.init(args[0]);
-            }
-            else {
+            } else if(args.length == 2) {
+                // Second argument is a properties file with variables that are
+                // replaced by Digester when the configuration is read in
+                Properties props = new Properties();
+                FileInputStream propsInputStream = null;
+                try {
+                    propsInputStream = new FileInputStream(args[1]);
+                    props.load(propsInputStream);
+                    VJdbcConfiguration.init(args[0], props);
+                } finally {
+                    if(propsInputStream != null) {
+                        propsInputStream.close();
+                    }
+                }
+            } else {
                 throw new RuntimeException("You must specify a configuration file as the first parameter");
             }
-            
+
             ConnectionServer connectionServer = new ConnectionServer();
             connectionServer.serve();
-        } catch(Throwable e) {
-            _logger.error(e);
+        } catch (Throwable e) {
+            _logger.error(e.getMessage(), e);
         }
     }
-    
+
     public ConnectionServer() {
     }
-    
+
     public void serve() throws IOException {
         _rmiConfiguration = VJdbcConfiguration.singleton().getRmiConfiguration();
 
@@ -62,7 +77,7 @@ public class ConnectionServer {
             _logger.info("Using RMI-Registry on port " + _rmiConfiguration.getPort());
             _registry = LocateRegistry.getRegistry(_rmiConfiguration.getPort());
         }
-        
+
         installShutdownHook();
 
         _logger.info("Binding remote object to '" + _rmiConfiguration.getObjectName() + "'");
@@ -76,9 +91,9 @@ public class ConnectionServer {
                 try {
                     _logger.info("Unbinding remote object");
                     _registry.unbind(_rmiConfiguration.getObjectName());
-                } catch(RemoteException e) {
+                } catch (RemoteException e) {
                     _logger.error("Remote exception", e);
-                } catch(NotBoundException e) {
+                } catch (NotBoundException e) {
                     _logger.error("Not bound exception", e);
                 }
             }
