@@ -50,7 +50,7 @@ public class DestroyCommand implements Command {
             try {
                 Class targetClass = JdbcInterfaceType._interfaces[_interfaceType];
                 Method mth = targetClass.getDeclaredMethod("close", new Class[0]);
-                mth.invoke(target, null);
+                mth.invoke(target, (Object[])null);
                 if(_logger.isDebugEnabled()) {
                     _logger.debug("Invoked close() successfully");
                 }
