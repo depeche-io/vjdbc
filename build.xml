@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <project name="VJdbc-Sf" basedir="." default="generateJars">
-	<property file="versioninfo.properties"/>
+    <property file="versioninfo.properties"/>
     <property name="tmpdir" value="builddir"/>
-	
-	<!-- Compiler switches -->
-	<property name="release" value="on"/>
-	<condition property="distribution_allowed">
-		<istrue value="${release}"/>
-	</condition>
-	<condition property="debug" value="on">
-		<istrue value="${release}"/>
-	</condition>
-	<condition property="optimize" value="off">
-		<istrue value="${release}"/>
-	</condition>
-
+    
+    <!-- Compiler switches -->
+    <property name="release" value="on"/>
+    <condition property="distribution_allowed">
+        <istrue value="${release}"/>
+    </condition>
+    <condition property="debug" value="on">
+        <istrue value="${release}"/>
+    </condition>
+    <condition property="optimize" value="off">
+        <istrue value="${release}"/>
+    </condition>
+    
     <target name="init">
         <mkdir dir="${tmpdir}/class"/>
         <mkdir dir="${tmpdir}/ear"/>
@@ -23,13 +23,13 @@
         <mkdir dir="${tmpdir}/applet"/>
         <mkdir dir="${tmpdir}/website"/>
     </target>
-
+    
     <target name="clean">
         <delete verbose="true" includeemptydirs="true">
             <fileset dir="${tmpdir}" includes="**/*"/>
         </delete>
     </target>
-
+    
     <target name="compile" depends="init">
         <javac srcdir="src" destdir="${tmpdir}/class" debug="${debug}" optimize="${optimize}">
             <classpath>
@@ -44,14 +44,14 @@
             </classpath>
         </rmic>
     </target>
-
+    
     <!-- Generate normal JARs (this is NOT an EJB-JAR) -->
     <target name="generateJars" depends="compile">
-    	<!-- Condition for exclusion of test classes -->
-    	<condition property="exclude_tests" value="de/simplicit/vjdbc/test/**">
-    		<istrue value="${release}"/>
-    	</condition>
-    	
+        <!-- Condition for exclusion of test classes -->
+        <condition property="exclude_tests" value="de/simplicit/vjdbc/test/**">
+            <istrue value="${release}"/>
+        </condition>
+        
         <!-- Delete old files -->
         <delete file="lib/vjdbc.jar" failonerror="false"/>
         <delete file="lib/vjdbc_server.jar" failonerror="false"/>
@@ -70,10 +70,10 @@
         </jar>
         <!-- ... now the server JAR -->
         <jar basedir="${tmpdir}/class" destfile="lib/vjdbc_server.jar"
-            includes="de/simplicit/vjdbc/server/**"
-            excludes="${exclude_tests}"/>
+             includes="de/simplicit/vjdbc/server/**"
+             excludes="${exclude_tests}"/>
     </target>
-
+    
     <!-- Generate EJB-JAR which depends on the previously created JAR -->
     <target name="generateEjbJar" depends="generateJars">
         <delete file="deploy/vjdbc_ejb.jar"/>
@@ -81,10 +81,10 @@
             <fileset dir="conf/ejb" excludesfile="conf/ejb/MANIFEST.MF"/>
         </copy>
         <jar basedir="${tmpdir}/class" destfile="deploy/vjdbc_ejb.jar"
-            includes="de/simplicit/vjdbc/server/ejb/*.class,META-INF/*"
-            manifest="conf/ejb/MANIFEST.MF"/>
+             includes="de/simplicit/vjdbc/server/ejb/*.class,META-INF/*"
+             manifest="conf/ejb/MANIFEST.MF"/>
     </target>
-
+    
     <!-- Generate Web-Archive which depends on the previously created JAR -->
     <target name="generateWar" depends="generateJars">
         <delete file="deploy/vjdbc_servlet.war"/>
@@ -95,7 +95,7 @@
             <lib dir="lib" excludes="j2ee_api.jar,junit.jar"/>
         </war>
     </target>
-
+    
     <!-- Generate EAR-File which contains only the EJB-Module -->
     <target name="generateEar" depends="generateJars,generateEjbJar">
         <delete file="deploy/vjdbc.ear"/>
@@ -105,7 +105,7 @@
         </copy>
         <ear basedir="${tmpdir}/ear" destfile="deploy/vjdbc.ear" appxml="conf/ear/application.xml"/>
     </target>
-
+    
     <target name="generateAppletArchive" depends="generateJars">
         <delete file="deploy/vjdbc_applet.jar"/>
         <copy todir="${tmpdir}/applet">
@@ -115,29 +115,29 @@
         <unjar src="lib/commons-logging.jar" dest="${tmpdir}/applet"/>
         <jar basedir="${tmpdir}/applet" destfile="deploy/vjdbc_applet.jar"/>
     </target>
-
+    
     <!-- Package the VJDBC-distribution -->
     <target name="distribution" depends="generateJars">
-    	<fail message="This build is still marked as 'in development', set 'release' property to 'true' if you want to build a distribution !" unless="distribution_allowed"/>
-    	
+        <fail message="This build is still marked as 'in development', set 'release' property to 'true' if you want to build a distribution !" unless="distribution_allowed"/>
+        
         <property name="distdirname" value="vjdbc_${version.major}_${version.minor}_${version.build}"/>
         <property name="distfilename" value="${distdirname}.zip"/>
         <property name="distdir" value="${tmpdir}/${distdirname}"/>
-
+        
         <delete dir="${distdir}"/>
         <mkdir dir="${distdir}"/>
-
+        
         <copy todir="${distdir}" >
             <fileset dir="." includes="conf/**" excludes="conf/lgpl.txt" />
             <fileset dir="conf" includes="lgpl.txt"/>
             <fileset dir="." includes="build.xml,readme.txt,changelog.txt"/>
             <fileset dir="." includes="lib/**" 
-            				 excludes="lib/log4j-1.2.8.jar" />
+                     excludes="lib/log4j-1.2.8.jar" />
             <fileset dir="." includes="docs/**" excludes="docs/ppt/**,**/Thumbs.db" />
             <fileset dir="." includes="src/**" excludes="src/**/test/*" />
             <fileset dir="." includes="deploy/readme.txt"/>
             <fileset dir="." includes="test/readme.txt"/>
-        	<fileset dir="test" includes="vjdbc.dtd"/>
+            <fileset dir="test" includes="vjdbc.dtd"/>
         </copy>
         <copy todir="${distdir}/docs/sample" >
             <fileset dir="src" includes="de/**/QuizApplet.java"/>
@@ -149,7 +149,7 @@
             <fileset dir="${tmpdir}" includes="${distdirname}/**"/>
         </zip>
     </target>
-
+    
     <!-- Packs the contents of the website -->
     <target name="packWebsite" depends="init" >
         <delete dir="${tmpdir}/website"/>
@@ -159,12 +159,12 @@
         <copy todir="${tmpdir}/website">
             <fileset file="changelog.txt"/>
         </copy>
-    	<copy todir="${tmpdir}/website/sample">
+        <copy todir="${tmpdir}/website/sample">
             <fileset dir="src" includes="de/**/QuizApplet.java" />
         </copy>
         <delete file="deploy/website.zip"/>
         <zip basedir="${tmpdir}/website" zipfile="deploy/website.zip"/>
     </target>
-
+    
     <target name="all" depends="clean,compile,generateJars,distribution,packWebsite"/>
 </project>

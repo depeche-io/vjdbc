@@ -5,6 +5,21 @@ FEA = Implemented feature
 BUG = Resolved bug
 OPT = Optimization
 CLN = Cleanup/Refactoring
+OTH = Other
+
+Release 1.6.5 (05 Feb 2007)
+---------------------------
+* FEA: ServletCommandSink now searches the whole classpath for the configuration resource
+* FEA: Using Doug Lea's PooledExecutor for asynchronously reading of remaining ResultSets instead
+       of starting a thread each time
+* FEA: PreparedStatement.set<...>Stream methods accept -1 as the length parameter. It is then
+       replaced by the actual length of the InputStream read by VJDBC
+* FEA: Support for Oracle's ROWID type
+* FEA: Added support for variable expansion in configuration file (thx to Chris Campbell), see
+       reference for details
+* BUG: Fixed possible race condition in ResultSetHolder (thx to John V. Sichi)
+* BUG: Fixed server-side NPE in finalizer of StreamingResultSet (thx again to John V. Sichi)
+* OTH: Changed contact email address to vjdbc@gmx.net
 
 Release 1.6.4 (19 Aug 2006)
 ---------------------------
