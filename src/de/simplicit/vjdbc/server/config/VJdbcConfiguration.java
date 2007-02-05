@@ -4,16 +4,19 @@
 
 package de.simplicit.vjdbc.server.config;
 
-import org.apache.commons.digester.Digester;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.xml.sax.SAXException;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
+
+import org.apache.commons.digester.Digester;
+import org.apache.commons.digester.substitution.MultiVariableExpander;
+import org.apache.commons.digester.substitution.VariableSubstitutor;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.xml.sax.SAXException;
 
 /**
  * Root configuration class. Can be initialized with different input objects
@@ -22,11 +25,11 @@ import java.util.List;
 public class VJdbcConfiguration {
     private static Log _logger = LogFactory.getLog(VJdbcConfiguration.class);
     private static VJdbcConfiguration _singleton;
-
+    
     private OcctConfiguration _occtConfiguration = new OcctConfiguration();
     private RmiConfiguration _rmiConfiguration;
     private List _connections = new ArrayList();
-
+    
     /**
      * Initialization with pre-built configuration object.
      * @param customConfig
@@ -34,43 +37,31 @@ public class VJdbcConfiguration {
     public static void init(VJdbcConfiguration customConfig) {
         if(_singleton != null) {
             _logger.warn("VJdbcConfiguration already initialized, init-Call is ignored");
-        }
-        else {
+        } else {
             _singleton = customConfig;
         }
     }
-
+    
     /**
      * Initialization with resource.
-     * @param resource Resource to be loaded by the ClassLoader
+     * @param configResource Resource to be loaded by the ClassLoader
      * @throws ConfigurationException
      */
-    public static void init(String resource) throws ConfigurationException {
-        if(_singleton != null) {
-            _logger.warn("VJdbcConfiguration already initialized, init-Call is ignored");
-        } else {
-            try {
-                _singleton = new VJdbcConfiguration(resource);
-                if(_logger.isInfoEnabled()) {
-                    _singleton.log();
-                }
-            } catch(Exception e) {
-                throw new ConfigurationException("VJdbc-Configuration failed", e);
-            }
-        }
+    public static void init(String configResource) throws ConfigurationException {
+        init(configResource, null);
     }
-
+    
     /**
-     * Initialization with pre-opened InputStream.
-     * @param is InputStream
+     * Initialization with resource.
+     * @param configResource Resource to be loaded by the ClassLoader
      * @throws ConfigurationException
      */
-    public static void init(InputStream is) throws ConfigurationException {
+    public static void init(String configResource, Properties configVariables) throws ConfigurationException {
         if(_singleton != null) {
             _logger.warn("VJdbcConfiguration already initialized, init-Call is ignored");
         } else {
             try {
-                _singleton = new VJdbcConfiguration(is);
+                _singleton = new VJdbcConfiguration(configResource, configVariables);
                 if(_logger.isInfoEnabled()) {
                     _singleton.log();
                 }
@@ -83,6 +74,28 @@ public class VJdbcConfiguration {
     }
 
     /**
+     * Initialization with pre-opened InputStream.
+     * @param configResourceInputStream InputStream
+     * @throws ConfigurationException
+     */
+    public static void init(InputStream configResourceInputStream, Properties configVariables) throws ConfigurationException {
+        if(_singleton != null) {
+            _logger.warn("VJdbcConfiguration already initialized, init-Call is ignored");
+        } else {
+            try {
+                _singleton = new VJdbcConfiguration(configResourceInputStream, configVariables);
+                if(_logger.isInfoEnabled()) {
+                    _singleton.log();
+                }
+            } catch(Exception e) {
+                String msg = "VJdbc-Configuration failed";
+                _logger.error(msg, e);
+                throw new ConfigurationException(msg, e);
+            }
+        }
+    }
+    
+    /**
      * Accessor method to the configuration singleton.
      * @return Configuration object
      * @throws RuntimeException Thrown when accessing without being initialized
@@ -94,21 +107,21 @@ public class VJdbcConfiguration {
         }
         return _singleton;
     }
-
+    
     /**
      * Constructor. Can be used for programmatical building the Configuration object.
      */
     public VJdbcConfiguration() {
     }
-
+    
     public OcctConfiguration getOcctConfiguration() {
         return _occtConfiguration;
     }
-
+    
     public void setOcctConfiguration(OcctConfiguration occtConfiguration) {
         _occtConfiguration = occtConfiguration;
     }
-
+    
     /**
      * Returns the RMI-Configuration.
      * @return RmiConfiguration object or null
@@ -116,7 +129,7 @@ public class VJdbcConfiguration {
     public RmiConfiguration getRmiConfiguration() {
         return _rmiConfiguration;
     }
-
+    
     /**
      * Sets the RMI-Configuration object.
      * @param rmiConfiguration RmiConfiguration object to be used.
@@ -139,7 +152,7 @@ public class VJdbcConfiguration {
         }
         return null;
     }
-
+    
     /**
      * Adds a ConnectionConfiguration.
      * @param connectionConfiguration
@@ -154,17 +167,31 @@ public class VJdbcConfiguration {
             throw new ConfigurationException(msg);
         }
     }
-
-    private VJdbcConfiguration(String resource) throws IOException, SAXException, ConfigurationException {
-        createDigester().parse(resource);
+        
+    private VJdbcConfiguration(InputStream configResource, Properties vars) throws IOException, SAXException, ConfigurationException {
+        Digester digester = createDigester(vars);
+        digester.parse(configResource);
+        validateConnections();
+    }
+    
+    private VJdbcConfiguration(String configResource, Properties vars) throws IOException, SAXException, ConfigurationException {
+        Digester digester = createDigester(vars);
+        digester.parse(configResource);
         validateConnections();
     }
 
-    private VJdbcConfiguration(InputStream resource) throws IOException, SAXException, ConfigurationException {
-        createDigester().parse(resource);
-        validateConnections();
+    private Digester createDigester(Properties vars) {
+        Digester digester = createDigester();
+        
+        if(vars != null) {
+            MultiVariableExpander expander = new MultiVariableExpander();
+            expander.addSource("$", vars);
+            digester.setSubstitutor(new VariableSubstitutor(expander));
+        }
+        
+        return digester;
     }
-
+    
     private void validateConnections() throws ConfigurationException {
         // Call the validation method of the configuration
         for(Iterator it = _connections.iterator(); it.hasNext();) {
@@ -172,10 +199,10 @@ public class VJdbcConfiguration {
             connectionConfiguration.validate();
         }
     }
-
+    
     private Digester createDigester() {
         Digester digester = new Digester();
-
+        
         digester.push(this);
         
         digester.addObjectCreate("vjdbc-configuration/occt", DigesterOcctConfiguration.class);
@@ -183,13 +210,13 @@ public class VJdbcConfiguration {
         digester.addSetNext("vjdbc-configuration/occt",
                 "setOcctConfiguration",
                 OcctConfiguration.class.getName());
-
+        
         digester.addObjectCreate("vjdbc-configuration/rmi", DigesterRmiConfiguration.class);
         digester.addSetProperties("vjdbc-configuration/rmi");
         digester.addSetNext("vjdbc-configuration/rmi",
                 "setRmiConfiguration",
                 RmiConfiguration.class.getName());
-
+        
         digester.addObjectCreate("vjdbc-configuration/connection", DigesterConnectionConfiguration.class);
         digester.addSetProperties("vjdbc-configuration/connection");
         digester.addSetNext("vjdbc-configuration/connection",
@@ -222,10 +249,10 @@ public class VJdbcConfiguration {
         digester.addSetNext("vjdbc-configuration/connection/query-filters",
                 "setQueryFilters",
                 QueryFilterConfiguration.class.getName());
-
+        
         return digester;
     }
-
+    
     private void log() {
         if(_rmiConfiguration != null) {
             _rmiConfiguration.log();
