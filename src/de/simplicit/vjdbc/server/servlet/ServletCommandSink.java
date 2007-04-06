@@ -53,7 +53,7 @@ public class ServletCommandSink extends HttpServlet {
         }
 
         _logger.info("Trying to get config resource " + configResource + "...");
-        InputStream configResourceInputStream = servletConfig.getServletContext().getResourceAsStream(configResource);
+        InputStream configResourceInputStream = getServletContext().getResourceAsStream(configResource);
         if(configResourceInputStream == null) {
             String msg = "VJDBC-Configuration " + configResource + " not found !";
             _logger.error(msg);
@@ -70,7 +70,7 @@ public class ServletCommandSink extends HttpServlet {
             InputStream configVariablesInputStream = null;
 
             try {
-                configVariablesInputStream = servletConfig.getServletContext().getResourceAsStream(configVariables);
+                configVariablesInputStream = getServletContext().getResourceAsStream(configVariables);
 
                 if(configVariablesInputStream == null) {
                     String msg = "Configuration-Variables " + configVariables + " not found !";
