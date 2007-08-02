@@ -45,6 +45,8 @@ public class ServletCommandSink extends HttpServlet {
     }
 
     public void init(ServletConfig servletConfig) throws ServletException {
+        super.init(servletConfig);
+        
         String configResource = servletConfig.getInitParameter(INIT_PARAMETER_CONFIG_RESOURCE);
 
         // Use default location when nothing is configured
