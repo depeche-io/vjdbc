@@ -31,6 +31,7 @@ import de.simplicit.vjdbc.server.config.VJdbcConfiguration;
 import de.simplicit.vjdbc.servlet.ServletCommandSinkIdentifier;
 import de.simplicit.vjdbc.util.SQLExceptionHelper;
 import de.simplicit.vjdbc.util.StreamCloser;
+import javax.servlet.ServletContext;
 
 public class ServletCommandSink extends HttpServlet {
     private static final String INIT_PARAMETER_CONFIG_RESOURCE = "config-resource";
@@ -54,8 +55,10 @@ public class ServletCommandSink extends HttpServlet {
             configResource = DEFAULT_CONFIG_RESOURCE;
         }
 
+        ServletContext ctx = servletConfig.getServletContext();
+        
         _logger.info("Trying to get config resource " + configResource + "...");
-        InputStream configResourceInputStream = getServletContext().getResourceAsStream(configResource);
+        InputStream configResourceInputStream = ctx.getResourceAsStream(configResource);
         if(configResourceInputStream == null) {
             String msg = "VJDBC-Configuration " + configResource + " not found !";
             _logger.error(msg);
@@ -72,7 +75,7 @@ public class ServletCommandSink extends HttpServlet {
             InputStream configVariablesInputStream = null;
 
             try {
-                configVariablesInputStream = getServletContext().getResourceAsStream(configVariables);
+                configVariablesInputStream = ctx.getResourceAsStream(configVariables);
 
                 if(configVariablesInputStream == null) {
                     String msg = "Configuration-Variables " + configVariables + " not found !";
