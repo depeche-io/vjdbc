@@ -7,6 +7,11 @@ OPT = Optimization
 CLN = Cleanup/Refactoring
 OTH = Other
 
+Release 1.6.6 (xxx)
+---------------------------
+* BUG: ServletCommandSink now loads Resources via Servlet-Context
+* BUG: ServletCommandSink init now calls Base-Class implementation
+
 Release 1.6.5 (05 Feb 2007)
 ---------------------------
 * FEA: ServletCommandSink now searches the whole classpath for the configuration resource
