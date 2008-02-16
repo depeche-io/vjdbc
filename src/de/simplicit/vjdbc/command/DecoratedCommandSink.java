@@ -198,4 +198,21 @@ public class DecoratedCommandSink {
             _listener.postExecution(cmd);
         }
     }
+    
+    public String processWithStringResult(UIDEx uid, Command cmd) throws SQLException {
+        return processWithStringResult(uid, cmd, false);
+    }
+    
+    public String processWithStringResult(UIDEx uid, Command cmd, boolean withCallingContext) throws SQLException {
+        try {
+            CallingContext ctx = null;
+            if(withCallingContext) {
+                ctx = _callingContextFactory.create();
+            }
+            _listener.preExecution(cmd);
+            return (String)_targetSink.process(_connectionUid.getUID(), uid.getUID(), cmd, ctx);
+        } finally {
+            _listener.postExecution(cmd);
+        }
+    }
 }
