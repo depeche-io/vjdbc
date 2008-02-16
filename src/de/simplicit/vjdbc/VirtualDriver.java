@@ -52,7 +52,7 @@ public final class VirtualDriver implements Driver {
     private static boolean _cacheEnabled = false;
     
     private static final int MAJOR_VERSION = 1;
-    private static final int MINOR_VERSION = 6;
+    private static final int MINOR_VERSION = 7;
 
     static {
         try {

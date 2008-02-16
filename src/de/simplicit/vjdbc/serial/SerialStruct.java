@@ -21,7 +21,16 @@ public class SerialStruct implements Struct, Externalizable {
     public SerialStruct() {
     }
 
-    public SerialStruct(Struct struct) throws SQLException {
+    public static SerialStruct createFrom(Struct struct) throws SQLException {
+        if(struct != null) {
+            return new SerialStruct(struct);
+        }
+        else {
+            return null;
+        }
+    }
+    
+    private SerialStruct(Struct struct) throws SQLException {
         _sqlTypeName = struct.getSQLTypeName();
         _attributes = struct.getAttributes();
     }

@@ -281,4 +281,106 @@ public class VirtualConnection extends VirtualBase implements Connection {
         UIDEx reg = (UIDEx)_sink.process(_objectUid, new ConnectionPrepareStatementExtendedCommand(sql, columnNames), true);
         return new VirtualPreparedStatement(reg, this, sql, _sink, ResultSet.TYPE_FORWARD_ONLY);
     }
+
+    public Clob createClob() throws SQLException {
+        throw new SQLFeatureNotSupportedException("Connection.createClob not supported yet.");
+    }
+
+    public Blob createBlob() throws SQLException {
+        throw new SQLFeatureNotSupportedException("Connection.createBlob not supported yet.");
+    }
+
+    public NClob createNClob() throws SQLException {
+        throw new SQLFeatureNotSupportedException("Connection.createNClob not supported yet.");
+    }
+
+    public SQLXML createSQLXML() throws SQLException {
+        throw new SQLFeatureNotSupportedException("Connection.createSQLXML not supported yet.");
+    }
+
+    public boolean isValid(int timeout) throws SQLException {
+        boolean result = false;
+        
+        if(timeout < 0) {
+            throw new SQLException("Timeout value is less than 0.");
+        }
+        
+        // When the connection is closed this connection isn't valid anymore
+        if(!_isClosed) {
+            try {
+                // Helper class that actually executes the Ping test to validate the connection
+                class PingTest implements Runnable {
+
+                    private boolean _pingTestOk = false;
+
+                    public void run() {
+                        try {
+                            _sink.process(null, new PingCommand());
+                            _pingTestOk = true;
+                        } catch (SQLException ex) {
+                            _logger.debug("Ping test failed", ex);
+                        }
+                    }
+
+                    public boolean isPingTestOK() {
+                        return _pingTestOk;
+                    }
+                }
+                ;
+
+                PingTest pingTest = new PingTest();
+                Thread t = new Thread(pingTest);
+                t.start();
+                // Wait for the specified timeout
+                t.join(timeout * 1000L);
+                result = pingTest.isPingTestOK();
+            } catch (InterruptedException ex) {
+                _logger.error("PingTest-Thread interrupted", ex);
+            }
+        }
+        
+        return result;
+    }
+
+    public void setClientInfo(String name, String value) throws SQLClientInfoException {
+        try {
+            _sink.process(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.CONNECTION, "setClientInfo", new Object[]{name, value}, ParameterTypeCombinations.STRSTR));
+        } catch (SQLException ex) {
+            _logger.error("Couldn't set client info value", ex);
+            throw new SQLClientInfoException(null, ex);
+        }
+    }
+
+    public void setClientInfo(Properties properties) throws SQLClientInfoException {
+        try {
+            _sink.process(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.CONNECTION, "setClientInfo", new Object[]{properties}, ParameterTypeCombinations.PRP));
+        } catch (SQLException ex) {
+            _logger.error("Couldn't set client info value", ex);
+            throw new SQLClientInfoException(null, ex);
+        }
+    }
+
+    public String getClientInfo(String name) throws SQLException {
+        return _sink.processWithStringResult(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.CONNECTION, "getClientInfo", new Object[] { name }, ParameterTypeCombinations.STR));
+    }
+
+    public Properties getClientInfo() throws SQLException {
+        return (Properties)_sink.process(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.CONNECTION, "getClientInfo"));
+    }
+
+    public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
+        throw new SQLFeatureNotSupportedException("Connection.createArrayOf not supported yet.");
+    }
+
+    public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
+        throw new SQLFeatureNotSupportedException("Connection.createStruct not supported yet.");
+    }
+
+    public <T> T unwrap(Class<T> iface) throws SQLException {
+        throw new SQLException("Doesn't support interface " + iface.getName());
+    }
+
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
+        return false;
+    }
 }

@@ -117,6 +117,9 @@ public class RowPacket implements Externalizable {
                 case Types.CHAR:
                 case Types.VARCHAR:
                 case Types.LONGVARCHAR:
+                case Types.NCHAR:
+                case Types.NVARCHAR:
+                case Types.LONGNVARCHAR:
                     _flattenedColumnsValues[internalIndex].setObject(_rowCount, rs.getString(i));
                     break;
 
@@ -173,26 +176,27 @@ public class RowPacket implements Externalizable {
                     break;
 
                 case Types.JAVA_OBJECT:
-                    _flattenedColumnsValues[internalIndex].setObject(_rowCount, new SerialJavaObject(rs.getObject(i)));
+                    _flattenedColumnsValues[internalIndex].setObject(_rowCount, SerialJavaObject.createFrom(rs.getObject(i)));
                     break;
 
                 case Types.CLOB:
-                    _flattenedColumnsValues[internalIndex].setObject(_rowCount, new SerialClob(rs.getClob(i)));
+                case Types.NCLOB:
+                    _flattenedColumnsValues[internalIndex].setObject(_rowCount, SerialClob.createFrom(rs.getClob(i)));
                     break;
 
                 case Types.BLOB:
-                    _flattenedColumnsValues[internalIndex].setObject(_rowCount, new SerialBlob(rs.getBlob(i)));
+                    _flattenedColumnsValues[internalIndex].setObject(_rowCount, SerialBlob.createFrom(rs.getBlob(i)));
                     break;
 
                 case Types.ARRAY:
-                    _flattenedColumnsValues[internalIndex].setObject(_rowCount, new SerialArray(rs.getArray(i)));
+                    _flattenedColumnsValues[internalIndex].setObject(_rowCount, SerialArray.createFrom(rs.getArray(i)));
                     break;
 
                 case Types.STRUCT:
-                    _flattenedColumnsValues[internalIndex].setObject(_rowCount, new SerialStruct((Struct) rs.getObject(i)));
+                    _flattenedColumnsValues[internalIndex].setObject(_rowCount, SerialStruct.createFrom((Struct) rs.getObject(i)));
                     break;
                     
-                case ORACLE_ROW_ID:
+                case ORACLE_ROW_ID: // Implicitly supports Types.ROWID which is -8 too
                     _flattenedColumnsValues[internalIndex].setObject(_rowCount, rs.getString(i));
                     break; 
 

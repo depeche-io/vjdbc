@@ -22,7 +22,7 @@ public class ClobParameter implements PreparedStatementParameter {
     }
     
     public ClobParameter(Clob value) throws SQLException {
-        _value = new SerialClob(value);
+        _value = SerialClob.createFrom(value);
     }
     
     public SerialClob getValue() {

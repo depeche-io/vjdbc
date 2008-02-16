@@ -14,7 +14,16 @@ public class SerialJavaObject implements Externalizable {
     
     private Object _javaObject;
 
-    public SerialJavaObject(Object javaObject) {
+    public static SerialJavaObject createFrom(Object javaObject) {
+        if(javaObject != null) {
+            return new SerialJavaObject(javaObject);
+        }
+        else {
+            return null;
+        }
+    }
+    
+    private SerialJavaObject(Object javaObject) {
         _javaObject = javaObject;
     }
 

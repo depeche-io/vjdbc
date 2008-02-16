@@ -40,4 +40,12 @@ public class HSqlDataSource implements DataSource {
     public Connection getConnection(String username, String password) throws SQLException {
         return DriverManager.getConnection("jdbc:hsqldb:.", username, password);
     }
+
+    public boolean isWrapperFor(Class iface) throws SQLException {
+        return false;
+    }
+
+    public <T> T unwrap(Class<T> iface) throws SQLException {
+        throw new SQLException("Doesn't support interface " + iface.getName());
+    }
 }

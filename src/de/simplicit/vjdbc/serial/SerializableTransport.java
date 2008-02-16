@@ -45,7 +45,7 @@ public class SerializableTransport implements Externalizable {
     }
 
     private void deflate(Object crs, int compressionMode, long minimumSize) {
-        if(compressionMode != Deflater.NO_COMPRESSION) {
+        if(crs != null || compressionMode != Deflater.NO_COMPRESSION) {
             try {
                 byte[] serializedObject = serializeObject(crs);
                 if(serializedObject.length >= minimumSize) {

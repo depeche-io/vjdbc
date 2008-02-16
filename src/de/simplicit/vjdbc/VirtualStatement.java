@@ -268,4 +268,25 @@ public class VirtualStatement extends VirtualBase implements Statement {
         return _sink.processWithIntResult(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.STATEMENT,
                 "getResultSetHoldability"));
     }
+
+    // JDK 6 methods
+    public boolean isClosed() throws SQLException {
+        return _isClosed;
+    }
+
+    public void setPoolable(boolean poolable) throws SQLException {
+        _sink.process(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.STATEMENT, "setPoolable", new Object[] { Boolean.valueOf(poolable)}, ParameterTypeCombinations.BOL));
+    }
+
+    public boolean isPoolable() throws SQLException {
+        return _sink.processWithBooleanResult(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.STATEMENT, "isPoolable"));
+    }
+    
+    public <T> T unwrap(Class<T> iface) throws SQLException {
+        throw new SQLException("Doesn't support interface " + iface.getName());
+    }
+
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
+        return false;
+    }
 }

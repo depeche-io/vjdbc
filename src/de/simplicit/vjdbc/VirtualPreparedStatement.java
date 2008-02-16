@@ -13,12 +13,15 @@ import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.Date;
+import java.sql.NClob;
 import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.Ref;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.RowId;
 import java.sql.SQLException;
+import java.sql.SQLXML;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Arrays;
@@ -46,6 +49,7 @@ import de.simplicit.vjdbc.parameters.DoubleParameter;
 import de.simplicit.vjdbc.parameters.FloatParameter;
 import de.simplicit.vjdbc.parameters.IntegerParameter;
 import de.simplicit.vjdbc.parameters.LongParameter;
+import de.simplicit.vjdbc.parameters.NStringParameter;
 import de.simplicit.vjdbc.parameters.NullParameter;
 import de.simplicit.vjdbc.parameters.ObjectParameter;
 import de.simplicit.vjdbc.parameters.PreparedStatementParameter;
@@ -252,6 +256,79 @@ public class VirtualPreparedStatement extends VirtualStatement implements Prepar
 
     public ParameterMetaData getParameterMetaData() throws SQLException {
         throw new UnsupportedOperationException("getParameterMetaData");
+    }
+    
+    // JDK 6 methods
+    public void setRowId(int parameterIndex, RowId x) throws SQLException {
+        throw new UnsupportedOperationException("setRowId");
+    }
+
+    public void setNString(int parameterIndex, String value) throws SQLException {
+        setParam(parameterIndex, new NStringParameter(value));
+    }
+
+    public void setNCharacterStream(int parameterIndex, Reader value, long length) throws SQLException {
+        throw new UnsupportedOperationException("setNCharacterStream");
+    }
+
+    public void setNClob(int parameterIndex, NClob value) throws SQLException {
+        throw new UnsupportedOperationException("setNClob");
+    }
+
+    public void setClob(int parameterIndex, Reader reader, long length) throws SQLException {
+        throw new UnsupportedOperationException("setClob");
+    }
+
+    public void setBlob(int parameterIndex, InputStream inputStream, long length) throws SQLException {
+        throw new UnsupportedOperationException("setBlob");
+    }
+
+    public void setNClob(int parameterIndex, Reader reader, long length) throws SQLException {
+        throw new UnsupportedOperationException("setNClob");
+    }
+
+    public void setSQLXML(int parameterIndex, SQLXML xmlObject) throws SQLException {
+        throw new UnsupportedOperationException("setSQLXML");
+    }
+
+    public void setAsciiStream(int parameterIndex, InputStream x, long length) throws SQLException {
+        throw new UnsupportedOperationException("setAsciiStream (long-Length)");
+    }
+
+    public void setBinaryStream(int parameterIndex, InputStream x, long length) throws SQLException {
+        throw new UnsupportedOperationException("setBinaryStream (long-Length)");
+    }
+
+    public void setCharacterStream(int parameterIndex, Reader reader, long length) throws SQLException {
+        throw new UnsupportedOperationException("setCharacterStream (long-Length)");
+    }
+
+    public void setAsciiStream(int parameterIndex, InputStream x) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void setBinaryStream(int parameterIndex, InputStream x) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void setCharacterStream(int parameterIndex, Reader reader) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void setNCharacterStream(int parameterIndex, Reader value) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void setClob(int parameterIndex, Reader reader) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void setBlob(int parameterIndex, InputStream inputStream) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void setNClob(int parameterIndex, Reader reader) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     private void setParam(int index, PreparedStatementParameter parm) {

@@ -363,4 +363,12 @@ public class SerialResultSetMetaData implements ResultSetMetaData, Externalizabl
             throw new SQLException("Method not supported");
         }
     }
+
+    public <T> T unwrap(Class<T> iface) throws SQLException {
+        throw new SQLException("Doesn't support interface " + iface.getName());
+    }
+
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
+        return false;
+    }
 }

@@ -162,6 +162,7 @@ public class StreamingResultSet implements ResultSet, Externalizable {
 
     public void close() throws SQLException {
         _cursor = -1;
+        
         if(_remainingResultSet != null) {
             // The server-side created StreamingResultSet is garbage-collected after it was send over the wire. Thus
             // we have to check here if it is such a server object because in this case we don't have to try the remote
@@ -1373,6 +1374,208 @@ public class StreamingResultSet implements ResultSet, Externalizable {
         throw new UnsupportedOperationException("updateArray");
     }
 
+    // JDK 1.5 methods 
+    
+    public RowId getRowId(int columnIndex) throws SQLException {
+        throw new UnsupportedOperationException("getRowId(int columnIndex)");
+    }
+
+    public RowId getRowId(String columnLabel) throws SQLException {
+        throw new UnsupportedOperationException("getRowId(String columnLabel)");
+    }
+
+    public void updateRowId(int columnIndex, RowId x) throws SQLException {
+        throw new UnsupportedOperationException("updateRowId(int columnIndex, RowId x)");
+    }
+
+    public void updateRowId(String columnLabel, RowId x) throws SQLException {
+        throw new UnsupportedOperationException("updateRowId(String columnLabel, RowId x)");
+    }
+
+    public int getHoldability() throws SQLException {
+        throw new UnsupportedOperationException("getHoldability()");
+    }
+
+    public boolean isClosed() throws SQLException {
+        return _cursor < 0;
+    }
+
+    public void updateNString(int columnIndex, String nString) throws SQLException {
+        throw new UnsupportedOperationException("updateNString(int columnIndex, String nString)");
+    }
+
+    public void updateNString(String columnLabel, String nString) throws SQLException {
+        throw new UnsupportedOperationException("updateNString(String columnLabel, String nString)");
+    }
+
+    public void updateNClob(int columnIndex, NClob nClob) throws SQLException {
+        throw new UnsupportedOperationException("updateNClob(int columnIndex, NClob nClob)");
+    }
+
+    public void updateNClob(String columnLabel, NClob nClob) throws SQLException {
+        throw new UnsupportedOperationException("updateNClob(String columnLabel, NClob nClob)");
+    }
+
+    public NClob getNClob(int columnIndex) throws SQLException {
+        throw new UnsupportedOperationException("getNClob(int columnIndex)");
+    }
+
+    public NClob getNClob(String columnLabel) throws SQLException {
+        throw new UnsupportedOperationException("getNClob(String columnLabel)");
+    }
+
+    public SQLXML getSQLXML(int columnIndex) throws SQLException {
+        throw new UnsupportedOperationException("getSQLXML(int columnIndex)");
+    }
+
+    public SQLXML getSQLXML(String columnLabel) throws SQLException {
+        throw new UnsupportedOperationException("getSQLXML(String columnLabel)");
+    }
+
+    public void updateSQLXML(int columnIndex, SQLXML xmlObject) throws SQLException {
+        throw new UnsupportedOperationException("updateSQLXML(int columnIndex, SQLXML xmlObject)");
+    }
+
+    public void updateSQLXML(String columnLabel, SQLXML xmlObject) throws SQLException {
+        throw new UnsupportedOperationException("updateSQLXML(String columnLabel, SQLXML xmlObject)");
+    }
+
+    public String getNString(int columnIndex) throws SQLException {
+        return getString(columnIndex);
+    }
+
+    public String getNString(String columnLabel) throws SQLException {
+        return getString(columnLabel);
+    }
+
+    public Reader getNCharacterStream(int columnIndex) throws SQLException {
+        return new StringReader(getNString(columnIndex));
+    }
+
+    public Reader getNCharacterStream(String columnLabel) throws SQLException {
+        return new StringReader(getNString(columnLabel));
+    }
+
+    public void updateNCharacterStream(int columnIndex, Reader x, long length) throws SQLException {
+        throw new UnsupportedOperationException("updateNCharacterStream(int columnIndex, Reader x, long length)");
+    }
+
+    public void updateNCharacterStream(String columnLabel, Reader reader, long length) throws SQLException {
+        throw new UnsupportedOperationException("updateNCharacterStream(String columnLabel, Reader reader, long length)");
+    }
+
+    public void updateAsciiStream(int columnIndex, InputStream x, long length) throws SQLException {
+        throw new UnsupportedOperationException("updateAsciiStream(int columnIndex, InputStream x, long length)");
+    }
+
+    public void updateBinaryStream(int columnIndex, InputStream x, long length) throws SQLException {
+        throw new UnsupportedOperationException("updateBinaryStream(int columnIndex, InputStream x, long length)");
+    }
+
+    public void updateCharacterStream(int columnIndex, Reader x, long length) throws SQLException {
+        throw new UnsupportedOperationException("updateCharacterStream(int columnIndex, Reader x, long length)");
+    }
+
+    public void updateAsciiStream(String columnLabel, InputStream x, long length) throws SQLException {
+        throw new UnsupportedOperationException("updateAsciiStream(String columnLabel, InputStream x, long length)");
+    }
+
+    public void updateBinaryStream(String columnLabel, InputStream x, long length) throws SQLException {
+        throw new UnsupportedOperationException("updateBinaryStream(String columnLabel, InputStream x, long length)");
+    }
+
+    public void updateCharacterStream(String columnLabel, Reader reader, long length) throws SQLException {
+        throw new UnsupportedOperationException("updateCharacterStream(String columnLabel, Reader reader, long length)");
+    }
+
+    public void updateBlob(int columnIndex, InputStream inputStream, long length) throws SQLException {
+        throw new UnsupportedOperationException("updateBlob(int columnIndex, InputStream inputStream, long length)");
+    }
+
+    public void updateBlob(String columnLabel, InputStream inputStream, long length) throws SQLException {
+        throw new UnsupportedOperationException("updateBlob(String columnLabel, InputStream inputStream, long length)");
+    }
+
+    public void updateClob(int columnIndex, Reader reader, long length) throws SQLException {
+        throw new UnsupportedOperationException("updateClob(int columnIndex, Reader reader, long length)");
+    }
+
+    public void updateClob(String columnLabel, Reader reader, long length) throws SQLException {
+        throw new UnsupportedOperationException("updateClob(String columnLabel, Reader reader, long length)");
+    }
+
+    public void updateNClob(int columnIndex, Reader reader, long length) throws SQLException {
+        throw new UnsupportedOperationException("updateNClob(int columnIndex, Reader reader, long length)");
+    }
+
+    public void updateNClob(String columnLabel, Reader reader, long length) throws SQLException {
+        throw new UnsupportedOperationException("updateNClob(String columnLabel, Reader reader, long length)");
+    }
+
+    public void updateNCharacterStream(int columnIndex, Reader x) throws SQLException {
+        throw new UnsupportedOperationException("updateNCharacterStream(int columnIndex, Reader x)");
+    }
+
+    public void updateNCharacterStream(String columnLabel, Reader reader) throws SQLException {
+        throw new UnsupportedOperationException("updateNCharacterStream(String columnLabel, Reader reader)");
+    }
+
+    public void updateAsciiStream(int columnIndex, InputStream x) throws SQLException {
+        throw new UnsupportedOperationException("updateAsciiStream(int columnIndex, InputStream x)");
+    }
+
+    public void updateBinaryStream(int columnIndex, InputStream x) throws SQLException {
+        throw new UnsupportedOperationException("updateBinaryStream(int columnIndex, InputStream x)");
+    }
+
+    public void updateCharacterStream(int columnIndex, Reader x) throws SQLException {
+        throw new UnsupportedOperationException("updateCharacterStream(int columnIndex, Reader x)");
+    }
+
+    public void updateAsciiStream(String columnLabel, InputStream x) throws SQLException {
+        throw new UnsupportedOperationException("updateAsciiStream(String columnLabel, InputStream x)");
+    }
+
+    public void updateBinaryStream(String columnLabel, InputStream x) throws SQLException {
+        throw new UnsupportedOperationException("updateBinaryStream(String columnLabel, InputStream x)");
+    }
+
+    public void updateCharacterStream(String columnLabel, Reader reader) throws SQLException {
+        throw new UnsupportedOperationException("updateCharacterStream(String columnLabel, Reader reader)");
+    }
+
+    public void updateBlob(int columnIndex, InputStream inputStream) throws SQLException {
+        throw new UnsupportedOperationException("updateBlob(int columnIndex, InputStream inputStream)");
+    }
+
+    public void updateBlob(String columnLabel, InputStream inputStream) throws SQLException {
+        throw new UnsupportedOperationException("updateBlob(String columnLabel, InputStream inputStream)");
+    }
+
+    public void updateClob(int columnIndex, Reader reader) throws SQLException {
+        throw new UnsupportedOperationException("updateClob(int columnIndex, Reader reader)");
+    }
+
+    public void updateClob(String columnLabel, Reader reader) throws SQLException {
+        throw new UnsupportedOperationException("updateClob(String columnLabel, Reader reader)");
+    }
+
+    public void updateNClob(int columnIndex, Reader reader) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void updateNClob(String columnLabel, Reader reader) throws SQLException {
+        throw new UnsupportedOperationException("updateNClob(String columnLabel, Reader reader)");
+    }
+
+    public <T> T unwrap(Class<T> iface) throws SQLException {
+        throw new SQLException("Doesn't support interface " + iface.getName());
+    }
+
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
+        return false;
+    }
+    
     private int getIndexForName(String name) throws SQLException {
         int result = -1;
         String nameLowercase = name.toLowerCase();

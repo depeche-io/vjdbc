@@ -1,7 +1,6 @@
 // VJDBC - Virtual JDBC
 // Written by Michael Link
 // Website: http://vjdbc.sourceforge.net
-
 package de.simplicit.vjdbc.serial;
 
 import java.io.*;
@@ -9,24 +8,33 @@ import java.sql.Blob;
 import java.sql.SQLException;
 
 public class SerialBlob implements Blob, Externalizable {
+
     private static final long serialVersionUID = 3258134639489857079L;
-    
     private byte[] _data;
 
     public SerialBlob() {
     }
 
-    public SerialBlob(Blob other) throws SQLException {
+    public static SerialBlob createFrom(Blob blob) throws SQLException {
+        if(blob != null) {
+            return new SerialBlob(blob);
+        }
+        else {
+            return null;
+        }
+    }
+    
+    private SerialBlob(Blob other) throws SQLException {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             InputStream is = other.getBinaryStream();
             byte[] buff = new byte[1024];
             int len;
-            while((len = is.read(buff)) > 0) {
+            while ((len = is.read(buff)) > 0) {
                 baos.write(buff, 0, len);
             }
             _data = baos.toByteArray();
-        } catch(IOException e) {
+        } catch (IOException e) {
             throw new SQLException("Can't retrieve contents of Blob", e.toString());
         }
     }
@@ -36,7 +44,7 @@ public class SerialBlob implements Blob, Externalizable {
     }
 
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        _data = (byte[])in.readObject();
+        _data = (byte[]) in.readObject();
     }
 
     public long length() throws SQLException {
@@ -45,12 +53,23 @@ public class SerialBlob implements Blob, Externalizable {
 
     public byte[] getBytes(long pos, int length) throws SQLException {
         byte[] result = new byte[length];
-        System.arraycopy(_data, (int)pos - 1, result, 0, length);
+        System.arraycopy(_data, (int) pos - 1, result, 0, length);
         return result;
     }
 
     public InputStream getBinaryStream() throws SQLException {
         return new ByteArrayInputStream(_data);
+    }
+
+    public InputStream getBinaryStream(long pos, long length) throws SQLException {
+        if (pos > Integer.MAX_VALUE) {
+            throw new SQLException("Parameter pos is greater than Integer.MAX_VALUE");
+        }
+        if (length > Integer.MAX_VALUE) {
+            throw new SQLException("Parameter length is greater than Integer.MAX_VALUE");
+        }
+
+        return new ByteArrayInputStream(_data, (int) pos, (int) length);
     }
 
     public long position(byte pattern[], long start) throws SQLException {
@@ -75,5 +94,9 @@ public class SerialBlob implements Blob, Externalizable {
 
     public void truncate(long len) throws SQLException {
         throw new UnsupportedOperationException("Blob.truncate");
+    }
+
+    public void free() throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

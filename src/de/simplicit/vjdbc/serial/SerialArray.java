@@ -21,7 +21,16 @@ public class SerialArray implements Array, Externalizable {
     public SerialArray() {
     }
 
-    public SerialArray(Array arr) throws SQLException {
+    public static SerialArray createFrom(Array arr) throws SQLException {
+        if(arr != null) {
+            return new SerialArray(arr);
+        }
+        else {
+            return null;
+        }
+    }
+    
+    private SerialArray(Array arr) throws SQLException {
         _baseType = arr.getBaseType();
         _baseTypeName = arr.getBaseTypeName();
         _array = arr.getArray();
@@ -30,7 +39,7 @@ public class SerialArray implements Array, Externalizable {
             Object[] orig = (Object[])_array;
             Struct[] cpy = new SerialStruct[orig.length];
             for(int i = 0; i < orig.length; i++) {
-                cpy[i] = new SerialStruct((Struct)orig[i]);
+                cpy[i] = SerialStruct.createFrom((Struct)orig[i]);
             }
             _array = cpy;
         }
@@ -86,5 +95,9 @@ public class SerialArray implements Array, Externalizable {
 
     public ResultSet getResultSet(long index, int count, Map map) throws SQLException {
         throw new UnsupportedOperationException("getResultSet(index, count, Map) not supported");
+    }
+
+    public void free() throws SQLException {
+        throw new UnsupportedOperationException("free() not supported");
     }
 }

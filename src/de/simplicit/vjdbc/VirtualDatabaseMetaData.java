@@ -13,6 +13,7 @@ import de.simplicit.vjdbc.util.SQLExceptionHelper;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.RowIdLifetime;
 import java.sql.SQLException;
 
 public class VirtualDatabaseMetaData extends VirtualBase implements DatabaseMetaData {
@@ -863,6 +864,51 @@ public class VirtualDatabaseMetaData extends VirtualBase implements DatabaseMeta
                 "supportsStatementPooling"));
     }
 
+    // JDK 6 methods
+    public RowIdLifetime getRowIdLifetime() throws SQLException {
+        return (RowIdLifetime)_sink.process(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.DATABASEMETADATA,
+                "getRowIdLifetime"));
+    }
+
+    public ResultSet getSchemas(String catalog, String schemaPattern) throws SQLException {
+        return queryResultSet(
+                CommandPool.getReflectiveCommand(JdbcInterfaceType.DATABASEMETADATA, "getSchemas", 
+                new Object[] { catalog, schemaPattern }, ParameterTypeCombinations.STRSTR));
+    }
+
+    public boolean supportsStoredFunctionsUsingCallSyntax() throws SQLException {
+        return _sink.processWithBooleanResult(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.DATABASEMETADATA, "supportsStoredFunctionsUsingCallSyntax"));
+    }
+
+    public boolean autoCommitFailureClosesAllResultSets() throws SQLException {
+        return _sink.processWithBooleanResult(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.DATABASEMETADATA, "autoCommitFailureClosesAllResultSets"));
+    }
+
+    public ResultSet getClientInfoProperties() throws SQLException {
+        return queryResultSet(
+                CommandPool.getReflectiveCommand(JdbcInterfaceType.DATABASEMETADATA, "getClientInfoProperties"));
+    }
+
+    public ResultSet getFunctions(String catalog, String schemaPattern, String functionNamePattern) throws SQLException {
+        return queryResultSet(
+                CommandPool.getReflectiveCommand(JdbcInterfaceType.DATABASEMETADATA, "getFunctions", 
+                new Object[] { catalog, schemaPattern, functionNamePattern }, ParameterTypeCombinations.STRSTRSTR));
+    }
+
+    public ResultSet getFunctionColumns(String catalog, String schemaPattern, String functionNamePattern, String columnNamePattern) throws SQLException {
+        return queryResultSet(
+                CommandPool.getReflectiveCommand(JdbcInterfaceType.DATABASEMETADATA, "getFunctionColumns", 
+                new Object[] { catalog, schemaPattern, functionNamePattern, columnNamePattern }, ParameterTypeCombinations.STRSTRSTRSTR));
+    }
+
+    public <T> T unwrap(Class<T> iface) throws SQLException {
+        throw new SQLException("Doesn't support interface " + iface.getName());
+    }
+
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
+        return false;
+    }
+    
     private ResultSet queryResultSet(Command cmd) throws SQLException {
         try {
             SerializableTransport st = (SerializableTransport) _sink.process(_objectUid, cmd, true);

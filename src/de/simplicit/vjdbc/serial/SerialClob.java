@@ -18,7 +18,16 @@ public class SerialClob implements Clob, Externalizable {
     public SerialClob() {
     }
 
-    public SerialClob(Clob other) throws SQLException {
+    public static SerialClob createFrom(Clob clob) throws SQLException {
+        if(clob != null) {
+            return new SerialClob(clob);
+        }
+        else {
+            return null;
+        }
+    }
+    
+    private SerialClob(Clob other) throws SQLException {
         try {
             StringWriter sw = new StringWriter();
             Reader rd = other.getCharacterStream();
@@ -51,6 +60,17 @@ public class SerialClob implements Clob, Externalizable {
 
     public Reader getCharacterStream() throws SQLException {
         return new StringReader(new String(_data));
+    }
+    
+    public Reader getCharacterStream(long pos, long length) throws SQLException {
+        if(pos > Integer.MAX_VALUE) {
+            throw new SQLException("Parameter pos is greater than Integer.MAX_VALUE");
+        }
+        if(length > Integer.MAX_VALUE) {
+            throw new SQLException("Parameter length is greater than Integer.MAX_VALUE");
+        }
+        
+        return new StringReader(new String(_data, (int)pos, (int)length));
     }
 
     public InputStream getAsciiStream() throws SQLException {
@@ -87,5 +107,9 @@ public class SerialClob implements Clob, Externalizable {
 
     public void truncate(long len) throws SQLException {
         throw new UnsupportedOperationException("SerialClob.truncate");
+    }
+
+    public void free() throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }
