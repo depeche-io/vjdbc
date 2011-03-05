@@ -18,7 +18,7 @@ public class HSqlDataSource implements DataSource {
             throw new SQLException(e.getMessage());
         }
     }
-    
+
     public int getLoginTimeout() throws SQLException {
         return 0;
     }
@@ -41,11 +41,11 @@ public class HSqlDataSource implements DataSource {
         return DriverManager.getConnection("jdbc:hsqldb:.", username, password);
     }
 
-    public boolean isWrapperFor(Class iface) throws SQLException {
-        return false;
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
+        return iface.isAssignableFrom(HSqlDataSource.class);
     }
 
     public <T> T unwrap(Class<T> iface) throws SQLException {
-        throw new SQLException("Doesn't support interface " + iface.getName());
+        return (T)this;
     }
 }

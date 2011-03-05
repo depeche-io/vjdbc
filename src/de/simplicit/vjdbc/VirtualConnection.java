@@ -6,12 +6,15 @@ package de.simplicit.vjdbc;
 
 import de.simplicit.vjdbc.cache.TableCache;
 import de.simplicit.vjdbc.command.*;
-import de.simplicit.vjdbc.serial.UIDEx;
+import de.simplicit.vjdbc.serial.*;
+import de.simplicit.vjdbc.util.ClientInfo;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.sql.*;
 import java.util.Map;
+import java.util.Iterator;
 import java.util.Properties;
 
 public class VirtualConnection extends VirtualBase implements Connection {
@@ -21,8 +24,8 @@ public class VirtualConnection extends VirtualBase implements Connection {
     private boolean _cachingEnabled = false;
     private Boolean _isAutoCommit = null;
     private Properties _connectionProperties;
-    private VirtualDatabaseMetaData _databaseMetaData;
-    private boolean _isClosed = false;
+    protected VirtualDatabaseMetaData _databaseMetaData;
+    protected boolean _isClosed = false;
 
     public VirtualConnection(UIDEx reg, DecoratedCommandSink sink, Properties props, boolean cachingEnabled) {
         super(reg, sink);
@@ -282,105 +285,129 @@ public class VirtualConnection extends VirtualBase implements Connection {
         return new VirtualPreparedStatement(reg, this, sql, _sink, ResultSet.TYPE_FORWARD_ONLY);
     }
 
+    /* start JDBC4 support */
     public Clob createClob() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Connection.createClob not supported yet.");
+        return new SerialClob();
     }
 
     public Blob createBlob() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Connection.createBlob not supported yet.");
+        return new SerialBlob();
     }
 
     public NClob createNClob() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Connection.createNClob not supported yet.");
+        return new SerialNClob();
     }
 
     public SQLXML createSQLXML() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Connection.createSQLXML not supported yet.");
+        return new SerialSQLXML();
+    }
+
+    class ValidRunnable implements Runnable {
+        public volatile boolean finished = false;
+        public void run() {
+            try {
+                _sink.processWithBooleanResult(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.CONNECTION, "isValid"));
+                finished = true;
+            } catch (SQLException sqle) {
+                _logger.info(sqle.getMessage(), sqle);
+            }
+        }
     }
 
     public boolean isValid(int timeout) throws SQLException {
-        boolean result = false;
-        
-        if(timeout < 0) {
-            throw new SQLException("Timeout value is less than 0.");
+
+        if (timeout <= 0) {
+            throw new SQLException("invalid timeout value " + timeout);
         }
-        
-        // When the connection is closed this connection isn't valid anymore
-        if(!_isClosed) {
+
+        // Schedule the keep alive timer task
+        ValidRunnable task = new ValidRunnable();
+        Thread t = new Thread(task);
+        long end = System.currentTimeMillis() + timeout;
+        long diff = timeout;
+        t.start();
+
+        while (!task.finished && diff > 0) {
             try {
-                // Helper class that actually executes the Ping test to validate the connection
-                class PingTest implements Runnable {
-
-                    private boolean _pingTestOk = false;
-
-                    public void run() {
-                        try {
-                            _sink.process(null, new PingCommand());
-                            _pingTestOk = true;
-                        } catch (SQLException ex) {
-                            _logger.debug("Ping test failed", ex);
-                        }
-                    }
-
-                    public boolean isPingTestOK() {
-                        return _pingTestOk;
-                    }
-                }
-                ;
-
-                PingTest pingTest = new PingTest();
-                Thread t = new Thread(pingTest);
-                t.start();
-                // Wait for the specified timeout
-                t.join(timeout * 1000L);
-                result = pingTest.isPingTestOK();
-            } catch (InterruptedException ex) {
-                _logger.error("PingTest-Thread interrupted", ex);
+                Thread.sleep(diff);
+            } catch (Exception e) {
             }
+            diff = end - System.currentTimeMillis();
         }
-        
-        return result;
+
+        return !task.finished;
     }
 
     public void setClientInfo(String name, String value) throws SQLClientInfoException {
+        Properties clientProps = ClientInfo.getProperties(null);
+        clientProps.put(name, value);
         try {
-            _sink.process(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.CONNECTION, "setClientInfo", new Object[]{name, value}, ParameterTypeCombinations.STRSTR));
-        } catch (SQLException ex) {
-            _logger.error("Couldn't set client info value", ex);
-            throw new SQLClientInfoException(null, ex);
+            _sink.process(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.CONNECTION, "setClientInfo",
+                new Object[]{ name, value },
+                ParameterTypeCombinations.STRSTR), true);
+        } catch (SQLClientInfoException e) {
+            throw e;
+        } catch (SQLException sqle) {
+            throw new SQLClientInfoException(null, sqle);
         }
     }
 
     public void setClientInfo(Properties properties) throws SQLClientInfoException {
-        try {
-            _sink.process(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.CONNECTION, "setClientInfo", new Object[]{properties}, ParameterTypeCombinations.PRP));
-        } catch (SQLException ex) {
-            _logger.error("Couldn't set client info value", ex);
-            throw new SQLClientInfoException(null, ex);
+        Properties clientProps = ClientInfo.getProperties(null);
+        Iterator it = properties.keySet().iterator();
+        while (it.hasNext()) {
+            String key = (String)it.next();
+            String value = properties.getProperty(key);
+            setClientInfo(key, value);
         }
     }
 
     public String getClientInfo(String name) throws SQLException {
-        return _sink.processWithStringResult(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.CONNECTION, "getClientInfo", new Object[] { name }, ParameterTypeCombinations.STR));
+
+        Properties clientProps = ClientInfo.getProperties(null);
+        String value = clientProps.getProperty(name);
+        if (value != null) {
+            return value;
+        }
+        String ret = (String)_sink.process(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.CONNECTION, "getClientInfo",
+                new Object[]{ name },
+                ParameterTypeCombinations.STR), true);
+        if (ret != null) {
+            clientProps.setProperty(name, ret);
+        }
+        return ret;
     }
 
     public Properties getClientInfo() throws SQLException {
-        return (Properties)_sink.process(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.CONNECTION, "getClientInfo"));
+        Properties clientProps = ClientInfo.getProperties(null);
+        if (clientProps != null && clientProps.size() > 1) {
+            return clientProps;
+        }
+        Properties ret = (Properties)_sink.process(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.CONNECTION, "getClientInfo"));
+        Iterator it = ret.keySet().iterator();
+        while (it.hasNext()) {
+            String key = (String)it.next();
+            String value = ret.getProperty(key);
+            clientProps.setProperty(key, value);
+        }
+        return ret;
     }
 
+
     public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
-        throw new SQLFeatureNotSupportedException("Connection.createArrayOf not supported yet.");
+        return new SerialArray(typeName, elements);
     }
 
     public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
-        throw new SQLFeatureNotSupportedException("Connection.createStruct not supported yet.");
-    }
-
-    public <T> T unwrap(Class<T> iface) throws SQLException {
-        throw new SQLException("Doesn't support interface " + iface.getName());
+        return new SerialStruct(typeName, attributes);
     }
 
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
-        return false;
+        return iface.isAssignableFrom(VirtualConnection.class);
     }
+
+    public <T> T unwrap(Class<T> iface) throws SQLException {
+        return (T)this;
+    }
+    /* end JDBC4 support */
 }

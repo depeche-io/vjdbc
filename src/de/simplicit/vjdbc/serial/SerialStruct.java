@@ -14,23 +14,19 @@ import java.util.Map;
 
 public class SerialStruct implements Struct, Externalizable {
     private static final long serialVersionUID = 3256444694312792625L;
-    
+
     private String _sqlTypeName;
     private Object[] _attributes;
 
     public SerialStruct() {
     }
 
-    public static SerialStruct createFrom(Struct struct) throws SQLException {
-        if(struct != null) {
-            return new SerialStruct(struct);
-        }
-        else {
-            return null;
-        }
+    public SerialStruct(String typeName, Object[] attributes) {
+        _sqlTypeName = typeName;
+        _attributes = attributes;
     }
-    
-    private SerialStruct(Struct struct) throws SQLException {
+
+    public SerialStruct(Struct struct) throws SQLException {
         _sqlTypeName = struct.getSQLTypeName();
         _attributes = struct.getAttributes();
     }

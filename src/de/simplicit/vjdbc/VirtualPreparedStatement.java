@@ -8,22 +8,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
-import java.sql.Array;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.NClob;
-import java.sql.ParameterMetaData;
-import java.sql.PreparedStatement;
-import java.sql.Ref;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.RowId;
-import java.sql.SQLException;
-import java.sql.SQLXML;
-import java.sql.Time;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
@@ -35,34 +20,8 @@ import de.simplicit.vjdbc.command.PreparedStatementExecuteBatchCommand;
 import de.simplicit.vjdbc.command.PreparedStatementExecuteCommand;
 import de.simplicit.vjdbc.command.PreparedStatementQueryCommand;
 import de.simplicit.vjdbc.command.PreparedStatementUpdateCommand;
-import de.simplicit.vjdbc.parameters.ArrayParameter;
-import de.simplicit.vjdbc.parameters.BigDecimalParameter;
-import de.simplicit.vjdbc.parameters.BlobParameter;
-import de.simplicit.vjdbc.parameters.BooleanParameter;
-import de.simplicit.vjdbc.parameters.ByteArrayParameter;
-import de.simplicit.vjdbc.parameters.ByteParameter;
-import de.simplicit.vjdbc.parameters.ByteStreamParameter;
-import de.simplicit.vjdbc.parameters.CharStreamParameter;
-import de.simplicit.vjdbc.parameters.ClobParameter;
-import de.simplicit.vjdbc.parameters.DateParameter;
-import de.simplicit.vjdbc.parameters.DoubleParameter;
-import de.simplicit.vjdbc.parameters.FloatParameter;
-import de.simplicit.vjdbc.parameters.IntegerParameter;
-import de.simplicit.vjdbc.parameters.LongParameter;
-import de.simplicit.vjdbc.parameters.NStringParameter;
-import de.simplicit.vjdbc.parameters.NullParameter;
-import de.simplicit.vjdbc.parameters.ObjectParameter;
-import de.simplicit.vjdbc.parameters.PreparedStatementParameter;
-import de.simplicit.vjdbc.parameters.RefParameter;
-import de.simplicit.vjdbc.parameters.ShortParameter;
-import de.simplicit.vjdbc.parameters.StringParameter;
-import de.simplicit.vjdbc.parameters.TimeParameter;
-import de.simplicit.vjdbc.parameters.TimestampParameter;
-import de.simplicit.vjdbc.parameters.URLParameter;
-import de.simplicit.vjdbc.serial.SerialResultSetMetaData;
-import de.simplicit.vjdbc.serial.SerializableTransport;
-import de.simplicit.vjdbc.serial.StreamingResultSet;
-import de.simplicit.vjdbc.serial.UIDEx;
+import de.simplicit.vjdbc.parameters.*;
+import de.simplicit.vjdbc.serial.*;
 import de.simplicit.vjdbc.util.SQLExceptionHelper;
 
 public class VirtualPreparedStatement extends VirtualStatement implements PreparedStatement {
@@ -257,79 +216,6 @@ public class VirtualPreparedStatement extends VirtualStatement implements Prepar
     public ParameterMetaData getParameterMetaData() throws SQLException {
         throw new UnsupportedOperationException("getParameterMetaData");
     }
-    
-    // JDK 6 methods
-    public void setRowId(int parameterIndex, RowId x) throws SQLException {
-        throw new UnsupportedOperationException("setRowId");
-    }
-
-    public void setNString(int parameterIndex, String value) throws SQLException {
-        setParam(parameterIndex, new NStringParameter(value));
-    }
-
-    public void setNCharacterStream(int parameterIndex, Reader value, long length) throws SQLException {
-        throw new UnsupportedOperationException("setNCharacterStream");
-    }
-
-    public void setNClob(int parameterIndex, NClob value) throws SQLException {
-        throw new UnsupportedOperationException("setNClob");
-    }
-
-    public void setClob(int parameterIndex, Reader reader, long length) throws SQLException {
-        throw new UnsupportedOperationException("setClob");
-    }
-
-    public void setBlob(int parameterIndex, InputStream inputStream, long length) throws SQLException {
-        throw new UnsupportedOperationException("setBlob");
-    }
-
-    public void setNClob(int parameterIndex, Reader reader, long length) throws SQLException {
-        throw new UnsupportedOperationException("setNClob");
-    }
-
-    public void setSQLXML(int parameterIndex, SQLXML xmlObject) throws SQLException {
-        throw new UnsupportedOperationException("setSQLXML");
-    }
-
-    public void setAsciiStream(int parameterIndex, InputStream x, long length) throws SQLException {
-        throw new UnsupportedOperationException("setAsciiStream (long-Length)");
-    }
-
-    public void setBinaryStream(int parameterIndex, InputStream x, long length) throws SQLException {
-        throw new UnsupportedOperationException("setBinaryStream (long-Length)");
-    }
-
-    public void setCharacterStream(int parameterIndex, Reader reader, long length) throws SQLException {
-        throw new UnsupportedOperationException("setCharacterStream (long-Length)");
-    }
-
-    public void setAsciiStream(int parameterIndex, InputStream x) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void setBinaryStream(int parameterIndex, InputStream x) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void setCharacterStream(int parameterIndex, Reader reader) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void setNCharacterStream(int parameterIndex, Reader value) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void setClob(int parameterIndex, Reader reader) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void setBlob(int parameterIndex, InputStream inputStream) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void setNClob(int parameterIndex, Reader reader) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
 
     private void setParam(int index, PreparedStatementParameter parm) {
         if(_paramList.length <= index) {
@@ -354,4 +240,82 @@ public class VirtualPreparedStatement extends VirtualStatement implements Prepar
             _paramList = _emptyParameters;
         }
     }
+
+    /* start JDBC4 support */
+    public void setRowId(int parameterIndex, RowId rowId) throws SQLException {
+        setParam(parameterIndex, new RowIdParameter(rowId));
+    }
+
+    public void setNString(int parameterIndex, String value) throws SQLException {
+        setParam(parameterIndex, new StringParameter(value));
+    }
+
+    public void setNCharacterStream(int parameterIndex, Reader reader, int length) throws SQLException {
+        setParam(parameterIndex, new CharStreamParameter(reader, length));
+    }
+
+    public void setNClob(int i, NClob x) throws SQLException {
+        setParam(i, new ClobParameter(x));
+    }
+
+    public void setClob(int i, Reader reader, long length) throws SQLException {
+        setParam(i, new ClobParameter(new SerialClob(reader, length)));
+    }
+
+    public void setBlob(int i, InputStream inputStream, long length) throws SQLException {
+        setParam(i, new BlobParameter(new SerialBlob(inputStream, length)));
+    }
+
+    public void setNClob(int i, Reader reader, long length) throws SQLException {
+        setParam(i, new ClobParameter(new SerialNClob(reader, length)));
+    }
+
+    public void setSQLXML(int i, SQLXML xmlObject) throws SQLException {
+        setParam(i, new SQLXMLParameter(new SerialSQLXML(xmlObject)));
+    }
+
+    public void setAsciiStream(int parameterIndex, InputStream x) throws SQLException {
+        setAsciiStream(parameterIndex, x, -1);
+    }
+
+    public void setAsciiStream(int parameterIndex, InputStream x, long length) throws SQLException {
+        setParam(parameterIndex, new ByteStreamParameter(ByteStreamParameter.TYPE_ASCII, x, length));
+    }
+
+    public void setBinaryStream(int parameterIndex, InputStream x) throws SQLException {
+        setBinaryStream(parameterIndex, x, -1);
+    }
+
+    public void setBinaryStream(int parameterIndex, InputStream x, long length) throws SQLException {
+        setParam(parameterIndex, new ByteStreamParameter(ByteStreamParameter.TYPE_BINARY, x, length));
+    }
+
+    public void setCharacterStream(int parameterIndex, Reader reader) throws SQLException {
+        setParam(parameterIndex, new CharStreamParameter(reader));
+    }
+
+    public void setCharacterStream(int parameterIndex, Reader reader, long length) throws SQLException {
+        setParam(parameterIndex, new CharStreamParameter(reader, length));
+    }
+
+    public void setNCharacterStream(int parameterIndex, Reader reader) throws SQLException {
+        setParam(parameterIndex, new CharStreamParameter(reader));
+    }
+
+    public void setNCharacterStream(int parameterIndex, Reader reader, long length) throws SQLException {
+        setParam(parameterIndex, new CharStreamParameter(reader, length));
+    }
+
+    public void setClob(int parameterIndex, Reader reader) throws SQLException {
+        setParam(parameterIndex, new ClobParameter(new SerialClob(reader)));
+    }
+
+    public void setBlob(int parameterIndex, InputStream inputStream) throws SQLException {
+        setParam(parameterIndex, new BlobParameter(new SerialBlob(inputStream)));
+    }
+
+    public void setNClob(int parameterIndex, Reader reader) throws SQLException {
+        setParam(parameterIndex, new ClobParameter(new SerialNClob(reader)));
+    }
+    /* end JDBC4 support */
 }

@@ -49,7 +49,7 @@ public class CallableStatementGetClobCommand implements Command {
         } else {
             result = cstmt.getClob(_index);
         }
-        return new SerializableTransport(SerialClob.createFrom(result), ctx.getCompressionMode(), ctx.getCompressionThreshold());
+        return new SerializableTransport(new SerialClob(result), ctx.getCompressionMode(), ctx.getCompressionThreshold());
     }
 
     public String toString() {

@@ -12,22 +12,13 @@ import de.simplicit.vjdbc.util.SQLExceptionHelper;
 
 public class SerialClob implements Clob, Externalizable {
     private static final long serialVersionUID = 3904682695287452212L;
-    
-    private char[] _data;
+
+    protected char[] _data;
 
     public SerialClob() {
     }
 
-    public static SerialClob createFrom(Clob clob) throws SQLException {
-        if(clob != null) {
-            return new SerialClob(clob);
-        }
-        else {
-            return null;
-        }
-    }
-    
-    private SerialClob(Clob other) throws SQLException {
+    public SerialClob(Clob other) throws SQLException {
         try {
             StringWriter sw = new StringWriter();
             Reader rd = other.getCharacterStream();
@@ -37,9 +28,48 @@ public class SerialClob implements Clob, Externalizable {
                 sw.write(buff, 0, len);
             }
             _data = sw.toString().toCharArray();
+            other.free();
         } catch(IOException e) {
             throw new SQLException("Can't retrieve contents of Clob", e.toString());
         }
+    }
+
+    public SerialClob(Reader rd) throws SQLException {
+        try {
+            init(rd);
+        } catch(IOException e) {
+            throw new SQLException("Can't retrieve contents of Clob", e.toString());
+        }
+    }
+
+    public SerialClob(Reader rd, long length) throws SQLException {
+        try {
+            init(rd, length);
+        } catch(IOException e) {
+            throw new SQLException("Can't retrieve contents of Clob", e.toString());
+        }
+    }
+
+    public void init(Reader rd) throws IOException {
+        StringWriter sw = new StringWriter();
+        char[] buff = new char[1024];
+        int len;
+        while((len = rd.read(buff)) > 0) {
+            sw.write(buff, 0, len);
+        }
+        _data = sw.toString().toCharArray();
+    }
+
+    public void init(Reader rd, long length) throws IOException {
+        StringWriter sw = new StringWriter();
+        char[] buff = new char[1024];
+        int len;
+        long toRead = length;
+        while(toRead > 0 && (len = rd.read(buff, 0, (int)(toRead > 1024 ? 1024 : toRead))) > 0) {
+            sw.write(buff, 0, len);
+            toRead -= len;
+        }
+        _data = sw.toString().toCharArray();
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
@@ -55,22 +85,21 @@ public class SerialClob implements Clob, Externalizable {
     }
 
     public String getSubString(long pos, int length) throws SQLException {
-        return new String(_data, (int)pos - 1, length);
+        if (pos <= Integer.MAX_VALUE) {
+            return new String(_data, (int)pos - 1, length);
+        }
+        // very slow but gets around problems with the pos being represented
+        // as long instead of an int in most java.io and other byte copying
+        // APIs
+        CharArrayWriter writer = new CharArrayWriter(length);
+        for (long i = 0; i < length; ++i) {
+            writer.write(_data[(int)(pos + i)]);
+        }
+        return writer.toString();
     }
 
     public Reader getCharacterStream() throws SQLException {
         return new StringReader(new String(_data));
-    }
-    
-    public Reader getCharacterStream(long pos, long length) throws SQLException {
-        if(pos > Integer.MAX_VALUE) {
-            throw new SQLException("Parameter pos is greater than Integer.MAX_VALUE");
-        }
-        if(length > Integer.MAX_VALUE) {
-            throw new SQLException("Parameter length is greater than Integer.MAX_VALUE");
-        }
-        
-        return new StringReader(new String(_data, (int)pos, (int)length));
     }
 
     public InputStream getAsciiStream() throws SQLException {
@@ -109,7 +138,23 @@ public class SerialClob implements Clob, Externalizable {
         throw new UnsupportedOperationException("SerialClob.truncate");
     }
 
-    public void free() throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    /* start JDBC4 support */
+    public Reader getCharacterStream(long pos, long length) throws SQLException {
+        if (pos <= Integer.MAX_VALUE && length <= Integer.MAX_VALUE) {
+            return new CharArrayReader(_data, (int)pos, (int)length);
+        }
+        // very slow but gets around problems with the pos being represented
+        // as long instead of an int in most java.io and other byte copying
+        // APIs
+        CharArrayWriter writer = new CharArrayWriter((int)length);
+        for (long i = 0; i < length; ++i) {
+            writer.write(_data[(int)(pos + i)]);
+        }
+        return new CharArrayReader(writer.toCharArray());
     }
+
+    public void free() throws SQLException {
+        _data = null;
+    }
+    /* end JDBC4 support */
 }

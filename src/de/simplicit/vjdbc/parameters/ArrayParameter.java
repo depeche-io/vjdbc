@@ -22,7 +22,7 @@ public class ArrayParameter implements PreparedStatementParameter {
     }
     
     public ArrayParameter(Array value) throws SQLException {
-        _value = SerialArray.createFrom(value);
+        _value = new SerialArray(value);
     }
     
     public SerialArray getValue() {

@@ -22,7 +22,7 @@ public class BlobParameter implements PreparedStatementParameter {
     }
     
     public BlobParameter(Blob value) throws SQLException {
-        _value = SerialBlob.createFrom(value);
+        _value = new SerialBlob(value);
     }
 
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {

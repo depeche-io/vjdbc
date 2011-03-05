@@ -50,7 +50,7 @@ public class CallableStatementGetArrayCommand implements Command {
         } else {
             result = cstmt.getArray(_index);
         }
-        return new SerializableTransport(SerialArray.createFrom(result), ctx.getCompressionMode(), ctx.getCompressionThreshold());
+        return new SerializableTransport(new SerialArray(result), ctx.getCompressionMode(), ctx.getCompressionThreshold());
     }
 
     public String toString() {
