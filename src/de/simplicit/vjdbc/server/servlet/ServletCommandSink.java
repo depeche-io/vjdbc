@@ -9,6 +9,8 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -47,7 +49,7 @@ public class ServletCommandSink extends HttpServlet {
 
     public void init(ServletConfig servletConfig) throws ServletException {
         super.init(servletConfig);
-        
+
         String configResource = servletConfig.getInitParameter(INIT_PARAMETER_CONFIG_RESOURCE);
 
         // Use default location when nothing is configured
@@ -56,9 +58,17 @@ public class ServletCommandSink extends HttpServlet {
         }
 
         ServletContext ctx = servletConfig.getServletContext();
-        
+
         _logger.info("Trying to get config resource " + configResource + "...");
         InputStream configResourceInputStream = ctx.getResourceAsStream(configResource);
+        if(null == configResourceInputStream) {
+            try {
+                configResourceInputStream =
+                    new FileInputStream(ctx.getRealPath(configResource));
+            } catch (FileNotFoundException fnfe) {
+            }
+        }
+
         if(configResourceInputStream == null) {
             String msg = "VJDBC-Configuration " + configResource + " not found !";
             _logger.error(msg);
@@ -76,6 +86,10 @@ public class ServletCommandSink extends HttpServlet {
 
             try {
                 configVariablesInputStream = ctx.getResourceAsStream(configVariables);
+                if(null == configVariablesInputStream) {
+                    configVariablesInputStream =
+                        new FileInputStream(ctx.getRealPath(configVariables));
+                }
 
                 if(configVariablesInputStream == null) {
                     String msg = "Configuration-Variables " + configVariables + " not found !";
@@ -106,7 +120,7 @@ public class ServletCommandSink extends HttpServlet {
             _logger.error("Initialization failed", e);
             throw new ServletException("VJDBC-Initialization failed", e);
         } finally {
-        	StreamCloser.close(configResourceInputStream);
+                StreamCloser.close(configResourceInputStream);
         }
     }
 

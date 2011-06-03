@@ -24,13 +24,19 @@ public class VirtualConnection extends VirtualBase implements Connection {
     private boolean _cachingEnabled = false;
     private Boolean _isAutoCommit = null;
     private Properties _connectionProperties;
-    protected VirtualDatabaseMetaData _databaseMetaData;
+    protected DatabaseMetaData _databaseMetaData;
     protected boolean _isClosed = false;
+
+    protected ProxyFactory proxyFactory = null;
 
     public VirtualConnection(UIDEx reg, DecoratedCommandSink sink, Properties props, boolean cachingEnabled) {
         super(reg, sink);
         _connectionProperties = props;
         _cachingEnabled = cachingEnabled;
+    }
+
+    public void setProxyFactory(ProxyFactory factory) {
+        proxyFactory = factory;
     }
 
     protected void finalize() throws Throwable {
@@ -40,8 +46,12 @@ public class VirtualConnection extends VirtualBase implements Connection {
     }
 
     public Statement createStatement() throws SQLException {
-        UIDEx reg = (UIDEx)_sink.process(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.CONNECTION, "createStatement"), true);
-        return new VirtualStatement(reg, this, _sink, ResultSet.TYPE_FORWARD_ONLY);
+        Object result =_sink.process(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.CONNECTION, "createStatement"), true);
+        if (result instanceof UIDEx) {
+            UIDEx reg = (UIDEx)result;
+            return new VirtualStatement(reg, this, _sink, ResultSet.TYPE_FORWARD_ONLY);
+        }
+        return (Statement)proxyFactory.makeJdbcObject(result);
     }
 
     public PreparedStatement prepareStatement(String sql) throws SQLException {
@@ -67,16 +77,26 @@ public class VirtualConnection extends VirtualBase implements Connection {
         }
 
         if(pstmt == null) {
-            UIDEx reg = (UIDEx)_sink.process(_objectUid, new ConnectionPrepareStatementCommand(sql), true);
-            pstmt = new VirtualPreparedStatement(reg, this, sql, _sink, ResultSet.TYPE_FORWARD_ONLY);
+            Object result = _sink.process(_objectUid, new ConnectionPrepareStatementCommand(sql), true);
+
+            if (result instanceof UIDEx) {
+                UIDEx reg = (UIDEx)result;
+                pstmt = new VirtualPreparedStatement(reg, this, sql, _sink, ResultSet.TYPE_FORWARD_ONLY);
+            } else {
+                pstmt = (PreparedStatement)proxyFactory.makeJdbcObject(result);
+            }
         }
 
         return pstmt;
     }
 
     public CallableStatement prepareCall(String sql) throws SQLException {
-        UIDEx reg = (UIDEx)_sink.process(_objectUid, new ConnectionPrepareCallCommand(sql), true);
-        return new VirtualCallableStatement(reg, this, sql, _sink, ResultSet.TYPE_FORWARD_ONLY);
+        Object result = _sink.process(_objectUid, new ConnectionPrepareCallCommand(sql), true);
+        if (result instanceof UIDEx) {
+            UIDEx reg = (UIDEx)result;
+            return new VirtualCallableStatement(reg, this, sql, _sink, ResultSet.TYPE_FORWARD_ONLY);
+        }
+        return (CallableStatement)proxyFactory.makeJdbcObject(result);
     }
 
     public String nativeSQL(String sql) throws SQLException {
@@ -110,8 +130,9 @@ public class VirtualConnection extends VirtualBase implements Connection {
     }
 
     public void close() throws SQLException {
-        if(_databaseMetaData != null) {
-            _sink.process(_databaseMetaData._objectUid, new DestroyCommand(_databaseMetaData._objectUid, JdbcInterfaceType.DATABASEMETADATA));
+        if(_databaseMetaData != null && _databaseMetaData instanceof VirtualDatabaseMetaData) {
+            UIDEx metadataId = ((VirtualDatabaseMetaData)_databaseMetaData)._objectUid;
+            _sink.process(metadataId, new DestroyCommand(metadataId, JdbcInterfaceType.DATABASEMETADATA));
             _databaseMetaData = null;
         }
         _sink.process(_objectUid, new DestroyCommand(_objectUid, JdbcInterfaceType.CONNECTION));
@@ -125,8 +146,13 @@ public class VirtualConnection extends VirtualBase implements Connection {
 
     public DatabaseMetaData getMetaData() throws SQLException {
         if(_databaseMetaData == null) {
-            UIDEx reg = (UIDEx)_sink.process(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.CONNECTION, "getMetaData"), true);
-            _databaseMetaData = new VirtualDatabaseMetaData(this, reg, _sink);
+            Object result = _sink.process(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.CONNECTION, "getMetaData"), true);
+            if (result instanceof UIDEx) {
+                UIDEx reg = (UIDEx)result;
+                _databaseMetaData = new VirtualDatabaseMetaData(this, reg, _sink);
+            } else {
+                _databaseMetaData = (DatabaseMetaData)proxyFactory.makeJdbcObject(result);
+            }
         }
         return _databaseMetaData;
     }
@@ -186,23 +212,38 @@ public class VirtualConnection extends VirtualBase implements Connection {
     }
 
     public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
-        UIDEx reg = (UIDEx)_sink.process(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.CONNECTION, "createStatement",
+        Object result = _sink.process(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.CONNECTION, "createStatement",
                 new Object[]{new Integer(resultSetType), new Integer(resultSetConcurrency)},
                 ParameterTypeCombinations.INTINT), true);
-        return new VirtualStatement(reg, this, _sink, resultSetType);
+
+        if (result instanceof UIDEx) {
+            UIDEx reg = (UIDEx)result;
+            return new VirtualStatement(reg, this, _sink, resultSetType);
+        }
+        return (Statement)proxyFactory.makeJdbcObject(result);
     }
 
     public PreparedStatement prepareStatement(String sql, int resultSetType,
                                               int resultSetConcurrency)
             throws SQLException {
-        UIDEx reg = (UIDEx)_sink.process(_objectUid, new ConnectionPrepareStatementCommand(sql, resultSetType, resultSetConcurrency), true);
-        return new VirtualPreparedStatement(reg, this, sql, _sink, resultSetType);
+        Object result = _sink.process(_objectUid, new ConnectionPrepareStatementCommand(sql, resultSetType, resultSetConcurrency), true);
+
+        if (result instanceof UIDEx) {
+            UIDEx reg = (UIDEx)result;
+            return new VirtualPreparedStatement(reg, this, sql, _sink, resultSetType);
+        }
+        return (PreparedStatement)proxyFactory.makeJdbcObject(result);
     }
 
     public CallableStatement prepareCall(String sql, int resultSetType,
                                          int resultSetConcurrency) throws SQLException {
-        UIDEx reg = (UIDEx)_sink.process(_objectUid, new ConnectionPrepareCallCommand(sql, resultSetType, resultSetConcurrency), true);
-        return new VirtualCallableStatement(reg, this, sql, _sink, resultSetType);
+        Object result = _sink.process(_objectUid, new ConnectionPrepareCallCommand(sql, resultSetType, resultSetConcurrency), true);
+
+        if (result instanceof UIDEx) {
+            UIDEx reg = (UIDEx)result;
+            return new VirtualCallableStatement(reg, this, sql, _sink, resultSetType);
+        }
+        return (CallableStatement)proxyFactory.makeJdbcObject(result);
     }
 
     public Map getTypeMap() throws SQLException {
@@ -249,40 +290,69 @@ public class VirtualConnection extends VirtualBase implements Connection {
 
     public Statement createStatement(int resultSetType, int resultSetConcurrency,
                                      int resultSetHoldability) throws SQLException {
-        UIDEx reg = (UIDEx)_sink.process(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.CONNECTION, "createStatement",
+        Object result = _sink.process(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.CONNECTION, "createStatement",
                 new Object[]{new Integer(resultSetType),
                              new Integer(resultSetConcurrency),
                              new Integer(resultSetHoldability)},
                 ParameterTypeCombinations.INTINTINT), true);
-        return new VirtualStatement(reg, this, _sink, resultSetType);
+        if (result instanceof UIDEx) {
+            UIDEx reg = (UIDEx)result;
+            return new VirtualStatement(reg, this, _sink, resultSetType);
+        }
+        return (Statement)proxyFactory.makeJdbcObject(result);
     }
 
     public PreparedStatement prepareStatement(String sql, int resultSetType,
                                               int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-        UIDEx reg = (UIDEx)_sink.process(_objectUid, new ConnectionPrepareStatementCommand(sql, resultSetType, resultSetConcurrency, resultSetHoldability), true);
-        return new VirtualPreparedStatement(reg, this, sql, _sink, resultSetType);
+        Object result = _sink.process(_objectUid, new ConnectionPrepareStatementCommand(sql, resultSetType, resultSetConcurrency, resultSetHoldability), true);
+
+        if (result instanceof UIDEx) {
+            UIDEx reg = (UIDEx)result;
+            return new VirtualPreparedStatement(reg, this, sql, _sink, resultSetType);
+        }
+        return (PreparedStatement)proxyFactory.makeJdbcObject(result);
     }
 
     public CallableStatement prepareCall(String sql, int resultSetType,
                                          int resultSetConcurrency,
                                          int resultSetHoldability) throws SQLException {
-        UIDEx reg = (UIDEx)_sink.process(_objectUid, new ConnectionPrepareCallCommand(sql, resultSetType, resultSetConcurrency, resultSetHoldability), true);
-        return new VirtualCallableStatement(reg, this, sql, _sink, resultSetType);
+        Object result = _sink.process(_objectUid, new ConnectionPrepareCallCommand(sql, resultSetType, resultSetConcurrency, resultSetHoldability), true);
+
+        if (result instanceof UIDEx) {
+            UIDEx reg = (UIDEx)result;
+            return new VirtualCallableStatement(reg, this, sql, _sink, resultSetType);
+        }
+        return (CallableStatement)proxyFactory.makeJdbcObject(result);
     }
 
     public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) throws SQLException {
-        UIDEx reg = (UIDEx)_sink.process(_objectUid, new ConnectionPrepareStatementExtendedCommand(sql, autoGeneratedKeys), true);
-        return new VirtualPreparedStatement(reg, this, sql, _sink, ResultSet.TYPE_FORWARD_ONLY);
+        Object result = _sink.process(_objectUid, new ConnectionPrepareStatementExtendedCommand(sql, autoGeneratedKeys), true);
+
+        if (result instanceof UIDEx) {
+            UIDEx reg = (UIDEx)result;
+            return new VirtualPreparedStatement(reg, this, sql, _sink, ResultSet.TYPE_FORWARD_ONLY);
+        }
+        return (PreparedStatement)proxyFactory.makeJdbcObject(result);
     }
 
     public PreparedStatement prepareStatement(String sql, int columnIndexes[]) throws SQLException {
-        UIDEx reg = (UIDEx)_sink.process(_objectUid, new ConnectionPrepareStatementExtendedCommand(sql, columnIndexes), true);
-        return new VirtualPreparedStatement(reg, this, sql, _sink, ResultSet.TYPE_FORWARD_ONLY);
+        Object result = _sink.process(_objectUid, new ConnectionPrepareStatementExtendedCommand(sql, columnIndexes), true);
+
+        if (result instanceof UIDEx) {
+            UIDEx reg = (UIDEx)result;
+            return new VirtualPreparedStatement(reg, this, sql, _sink, ResultSet.TYPE_FORWARD_ONLY);
+        }
+        return (PreparedStatement)proxyFactory.makeJdbcObject(result);
     }
 
     public PreparedStatement prepareStatement(String sql, String columnNames[]) throws SQLException {
-        UIDEx reg = (UIDEx)_sink.process(_objectUid, new ConnectionPrepareStatementExtendedCommand(sql, columnNames), true);
-        return new VirtualPreparedStatement(reg, this, sql, _sink, ResultSet.TYPE_FORWARD_ONLY);
+        Object result = _sink.process(_objectUid, new ConnectionPrepareStatementExtendedCommand(sql, columnNames), true);
+
+        if (result instanceof UIDEx) {
+            UIDEx reg = (UIDEx)result;
+            return new VirtualPreparedStatement(reg, this, sql, _sink, ResultSet.TYPE_FORWARD_ONLY);
+        }
+        return (PreparedStatement)proxyFactory.makeJdbcObject(result);
     }
 
     /* start JDBC4 support */

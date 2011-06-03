@@ -173,6 +173,9 @@ class ConnectionEntry implements ConnectionContext {
                         if(_logger.isDebugEnabled()) {
                             _logger.debug("Registered " + result.getClass().getName() + " with UID " + uidResult);
                         }
+                        if (result instanceof ProxiedObject) {
+                            return ((ProxiedObject)result).getProxy();
+                        }
                         return uidResult;
                     } else {
                         // When the result is of type ResultSet then handle it specially
@@ -229,12 +232,18 @@ class ConnectionEntry implements ConnectionContext {
         JdbcObjectHolder target = _jdbcObjects.get(uid);
 
         if (target != null) {
-            cmd.execute(target.getJdbcObject(), this);
-            //Statement statement = (Statement)target.getJdbcObject();
-            // statement.cancel();
+            try {
+                Statement stmt = (Statement)target.getJdbcObject();
+                if (stmt != null) {
+                    cmd.execute(stmt, this);
+                } else {
+                    _logger.info("no statement with id " + uid + " to cancel");
+                }
+            } catch (Exception e) {
+                _logger.info(e.getMessage(), e);
+            }
         } else {
-            target = _jdbcObjects.get(connuid);
-            cmd.execute(target.getJdbcObject(), this);
+            _logger.info("no statement with id " + uid + " to cancel");
         }
     }
 

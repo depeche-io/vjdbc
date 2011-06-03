@@ -8,11 +8,14 @@ import de.simplicit.vjdbc.serial.UIDEx;
 
 /**
  * An interface for a JDBC object that can be reconstructed by the client from
- * a network proxy.  The client must override the client code to use the
- * proxy to recreate the original object including the UIDEx registration
- * object.
+ * a network proxy.  The client must implement a ProxyFactory that can take
+ * the proxied object and turn it back into the proper client side JDBC object.
  */
-public interface ProxiedObject {
+public interface ProxiedObject extends Registerable {
 
-    public UIDEx getUID();
+    /**
+     * The object to be serialized and transported via the command sink.
+     * The returned value must implement Serializable or Externalizable
+     */
+    public Object getProxy();
 }

@@ -15,8 +15,8 @@ import java.sql.SQLException;
 public class PreparedStatementQueryCommand implements Command, ResultSetProducerCommand {
     static final long serialVersionUID = -7028150330288724130L;
 
-    private PreparedStatementParameter[] _params;
-    private int _resultSetType;
+    protected PreparedStatementParameter[] _params;
+    protected int _resultSetType;
 
     public PreparedStatementQueryCommand() {
     }
@@ -51,7 +51,7 @@ public class PreparedStatementQueryCommand implements Command, ResultSetProducer
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("PreparedStatementQueryCommand");
-        if(_params.length > 0) {
+        if(_params != null && _params.length > 0) {
             sb.append(" with parameters\n");
             for(int i = 0, n = _params.length; i < n; i++) {
                 sb.append("\t[").append(i + 1).append("] = ").append(_params[i]);

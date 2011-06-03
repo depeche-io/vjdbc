@@ -27,10 +27,10 @@ import de.simplicit.vjdbc.util.SQLExceptionHelper;
 public class VirtualPreparedStatement extends VirtualStatement implements PreparedStatement {
     private static PreparedStatementParameter[] _emptyParameters = new PreparedStatementParameter[0];
 
-    private PreparedStatementParameter[] _paramList = new PreparedStatementParameter[10];
-    private int _maxIndex = 0;
+    protected PreparedStatementParameter[] _paramList = new PreparedStatementParameter[10];
+    protected int _maxIndex = 0;
 
-    VirtualPreparedStatement(UIDEx reg, Connection connection, String sql, DecoratedCommandSink sink, int resultSetType) {
+    public VirtualPreparedStatement(UIDEx reg, Connection connection, String sql, DecoratedCommandSink sink, int resultSetType) {
         super(reg, connection, sink, resultSetType);
     }
 
@@ -126,8 +126,9 @@ public class VirtualPreparedStatement extends VirtualStatement implements Prepar
     }
 
     public void clearParameters() throws SQLException {
-        _paramList = _emptyParameters;
-        _maxIndex = 0;
+        for (int i = 0; i < _paramList.length; ++i) {
+            _paramList[i] = null;
+        }
     }
 
     public void setObject(int parameterIndex, Object x, int targetSqlType, int scale) throws SQLException {
@@ -217,8 +218,8 @@ public class VirtualPreparedStatement extends VirtualStatement implements Prepar
         throw new UnsupportedOperationException("getParameterMetaData");
     }
 
-    private void setParam(int index, PreparedStatementParameter parm) {
-        if(_paramList.length <= index) {
+    protected void setParam(int index, PreparedStatementParameter parm) {
+        if(_paramList.length < index) {
             List tmp = Arrays.asList(_paramList);
             PreparedStatementParameter[] newArray = new PreparedStatementParameter[index * 2];
             _paramList = (PreparedStatementParameter[]) tmp.toArray(newArray);
@@ -231,7 +232,7 @@ public class VirtualPreparedStatement extends VirtualStatement implements Prepar
         _paramList[index - 1] = parm;
     }
 
-    private void reduceParam() {
+    protected void reduceParam() {
         if(_maxIndex > 0) {
             PreparedStatementParameter[] tmpArray = new PreparedStatementParameter[_maxIndex];
             System.arraycopy(_paramList, 0, tmpArray, 0, _maxIndex);

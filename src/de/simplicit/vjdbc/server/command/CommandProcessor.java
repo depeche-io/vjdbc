@@ -19,6 +19,7 @@ import java.util.TimerTask;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import de.simplicit.vjdbc.Registerable;
 import de.simplicit.vjdbc.VJdbcException;
 import de.simplicit.vjdbc.command.Command;
 import de.simplicit.vjdbc.command.DestroyCommand;
@@ -113,6 +114,21 @@ public class CommandProcessor {
         UIDEx reg = new UIDEx(connid, config.isTraceOrphanedObjects() ? 1 : 0);
         _connectionEntries.put(connid, new ConnectionEntry(connid, conn, config, clientInfo, ctx));
         return reg;
+    }
+
+    public void registerJDBCObject(Long connid, Registerable obj)
+    {
+        ConnectionEntry entry = getConnectionEntry(connid);
+        assert(entry != null);
+        entry.addJDBCObject(obj.getReg().getUID(), obj);
+    }
+
+    public void unregisterJDBCObject(Long connid, Registerable obj)
+    {
+        ConnectionEntry entry = getConnectionEntry(connid);
+        if (entry != null) {
+            entry.removeJDBCObject(obj.getReg().getUID());
+        }
     }
 
     public void destroy() {

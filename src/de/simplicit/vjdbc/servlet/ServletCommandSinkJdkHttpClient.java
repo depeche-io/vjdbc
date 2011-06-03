@@ -16,7 +16,7 @@ import de.simplicit.vjdbc.serial.UIDEx;
 import de.simplicit.vjdbc.util.SQLExceptionHelper;
 import de.simplicit.vjdbc.util.StreamCloser;
 
-public class ServletCommandSinkJdkHttpClient extends AbstractServletCommandSinkClient {   
+public class ServletCommandSinkJdkHttpClient extends AbstractServletCommandSinkClient {
     public ServletCommandSinkJdkHttpClient(String url, RequestEnhancer requestEnhancer) throws SQLException {
         super(url, requestEnhancer);
     }
@@ -66,9 +66,9 @@ public class ServletCommandSinkJdkHttpClient extends AbstractServletCommandSinkC
             throw SQLExceptionHelper.wrap(e);
         } finally {
             // Cleanup resources
-            StreamCloser.close(oos);
             StreamCloser.close(ois);
-            
+            StreamCloser.close(oos);
+
             if(conn != null) {
                 conn.disconnect();
             }
@@ -113,9 +113,9 @@ public class ServletCommandSinkJdkHttpClient extends AbstractServletCommandSinkC
             throw SQLExceptionHelper.wrap(e);
         } finally {
             // Cleanup resources
-            StreamCloser.close(oos);
             StreamCloser.close(ois);
-            
+            StreamCloser.close(oos);
+
             if(conn != null) {
                 conn.disconnect();
             }

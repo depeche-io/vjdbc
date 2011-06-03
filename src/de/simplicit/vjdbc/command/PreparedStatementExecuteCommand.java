@@ -15,7 +15,7 @@ import java.sql.SQLException;
 public class PreparedStatementExecuteCommand implements Command {
     static final long serialVersionUID = 8987200111317750567L;
 
-    private PreparedStatementParameter[] _params;
+    protected PreparedStatementParameter[] _params;
 
     public PreparedStatementExecuteCommand() {
     }

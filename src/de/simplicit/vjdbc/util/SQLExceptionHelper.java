@@ -16,7 +16,7 @@ public class SQLExceptionHelper {
     public static SQLException wrap(Throwable t) {
         return wrapThrowable(t);
     }
-    
+
     public static SQLException wrap(SQLException ex) {
         if(isSQLExceptionGeneric(ex)) {
             return ex;
@@ -25,18 +25,22 @@ public class SQLExceptionHelper {
             return wrapSQLException(ex);
         }
     }
-    
+
     private static boolean isSQLExceptionGeneric(SQLException ex) {
         boolean exceptionIsGeneric = true;
-        
+
         // Check here if all chained SQLExceptions can be serialized, there may be
         // vendor specific SQLException classes which can't be delivered to the client
         SQLException loop = ex;
         while(loop != null && exceptionIsGeneric) {
-            exceptionIsGeneric = loop.getClass().equals(SQLException.class) || loop.getClass().equals(SQLWarning.class);
+            exceptionIsGeneric =
+                loop.getClass().equals(SQLException.class) ||
+                loop.getClass().equals(SQLWarning.class) ||
+                java.io.Serializable.class.isAssignableFrom(loop.getClass()) ||
+                java.io.Externalizable.class.isAssignableFrom(loop.getClass());
             loop = loop.getNextException();
         }
-        
+
         return exceptionIsGeneric;
     }
 
@@ -47,7 +51,7 @@ public class SQLExceptionHelper {
         }
         return ex2;
     }
-    
+
     private static SQLException wrapThrowable(Throwable t) {
         // Then check if a cause is present
         if(JavaVersionInfo.use14Api && t.getCause() != null) {

@@ -4,7 +4,7 @@
 
 package de.simplicit.vjdbc.server.command;
 
-import de.simplicit.vjdbc.ProxiedObject;
+import de.simplicit.vjdbc.Registerable;
 import de.simplicit.vjdbc.serial.UIDEx;
 import de.simplicit.vjdbc.util.JavaVersionInfo;
 
@@ -20,8 +20,8 @@ import java.sql.Statement;
 class ReturnedObjectGuard {
 
     public static UIDEx checkResult(Object obj) {
-        if (obj instanceof ProxiedObject) {
-            return ((ProxiedObject)obj).getUID();
+        if (obj instanceof Registerable) {
+            return ((Registerable)obj).getReg();
         } else if(obj instanceof Statement) {
             try {
                 Statement stmt = (Statement)obj;
