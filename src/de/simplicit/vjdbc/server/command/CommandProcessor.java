@@ -63,7 +63,7 @@ public class CommandProcessor {
             _timer.scheduleAtFixedRate(new OrphanedConnectionCollectorTask(), _occtConfig.getCheckingPeriodInMillis(), _occtConfig
                     .getCheckingPeriodInMillis());
         } else {
-            _logger.warn("OCCT is turned off");
+            _logger.info("OCCT is turned off");
         }
     }
 

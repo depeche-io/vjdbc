@@ -37,8 +37,8 @@ public class OcctConfiguration {
     }
 
     public void setTimeoutInMillis(long timeout) {
-        if(timeout != 0 && timeout <= 1000) {
-            _logger.error("Timeout must be greater than 1 second");
+        if(timeout > 0 && timeout <= 1000) {
+            _logger.error("Timeout must be greater than 1 second " + timeout);
         }
         else {
             _timeout = timeout;
