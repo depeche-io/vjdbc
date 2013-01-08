@@ -7,6 +7,7 @@ package de.simplicit.vjdbc.serial;
 import de.simplicit.vjdbc.command.*;
 import de.simplicit.vjdbc.util.JavaVersionInfo;
 import de.simplicit.vjdbc.util.SQLExceptionHelper;
+import de.simplicit.vjdbc.VirtualStatement;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -171,7 +172,7 @@ public class StreamingResultSet implements ResultSet, Externalizable {
             }
             _remainingResultSet = null;
         }
-        if (_statement.isCloseOnCompletion()) {
+        if (((VirtualStatement)_statement).isCloseOnCompletion()) {
             _statement.close();
         }
     }

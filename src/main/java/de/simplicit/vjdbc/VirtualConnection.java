@@ -377,7 +377,9 @@ public class VirtualConnection extends VirtualBase implements Connection {
         public volatile boolean finished = false;
         public void run() {
             try {
-                _sink.processWithBooleanResult(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.CONNECTION, "isValid"));
+                Object args[] = new Object[1];
+                args[0] = new Integer(0); // doesn't matter for this call
+                _sink.processWithBooleanResult(_objectUid, CommandPool.getReflectiveCommand(JdbcInterfaceType.CONNECTION, "isValid", args, 2));
                 finished = true;
             } catch (SQLException sqle) {
                 _logger.info(sqle.getMessage(), sqle);
