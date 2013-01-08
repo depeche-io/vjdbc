@@ -79,7 +79,7 @@
               <goal>jar</goal>
             </goals>
             <configuration>
-              <classifier>server</classifier>
+              <finalName>vjdbc-server-${project.version}</finalName>
               <includes>
                 <include>de/simplicit/vjdbc/server/**</include>
               </includes>
