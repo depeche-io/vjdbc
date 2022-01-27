@@ -223,8 +223,7 @@ package de.simplicit.vjdbc.server.concurrent;
  *    
  * </pre>
  * <p>[<a href="http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent/intro.html"> Introduction to this package. </a>]
- * @see Sync 
- * @see BoundedChannel 
+ * @see BoundedChannel
 **/
 
 public interface Channel extends Puttable, Takable {

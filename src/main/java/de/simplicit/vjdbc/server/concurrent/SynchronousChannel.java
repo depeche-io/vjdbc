@@ -29,8 +29,6 @@ package de.simplicit.vjdbc.server.concurrent;
  * bidirectional exchanges, consider using a Rendezvous.  <p>
  *
  * <p>[<a href="http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent/intro.html"> Introduction to this package. </a>]
- * @see CyclicBarrier
- * @see Rendezvous
 **/
 
 public class SynchronousChannel implements BoundedChannel {

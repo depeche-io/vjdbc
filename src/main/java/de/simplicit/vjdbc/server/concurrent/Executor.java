@@ -1,4 +1,4 @@
-/*
+/**
   File: Executor.java
 
   Originally written by Doug Lea and released into the public domain.
