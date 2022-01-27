@@ -8,6 +8,8 @@ import java.io.*;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import oracle.jdbc.OraclePreparedStatement;
+
 public class ByteStreamParameter implements PreparedStatementParameter {
     static final long serialVersionUID = 8868161011164192986L;
 
@@ -17,18 +19,18 @@ public class ByteStreamParameter implements PreparedStatementParameter {
 
     private int _type;
     private byte[] _value;
-    private long _length;
-
+    private int _length;
+    
     public ByteStreamParameter() {
     }
 
-    public ByteStreamParameter(int type, InputStream x, long length) throws SQLException {
+    public ByteStreamParameter(int type, InputStream x, int length) throws SQLException {
         _type = type;
         _length = length;
 
         BufferedInputStream s = new BufferedInputStream(x);
         try {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream((int)(length >= 0 ? length : 1024));
+            ByteArrayOutputStream bos = new ByteArrayOutputStream(length >= 0 ? length : 1024);
             byte buf[] = new byte[1024];
             int br;
             while((br = s.read(buf)) >= 0) {
@@ -51,7 +53,7 @@ public class ByteStreamParameter implements PreparedStatementParameter {
             }
         }
     }
-
+    
     public byte[] getValue() {
         return _value;
     }
@@ -59,13 +61,13 @@ public class ByteStreamParameter implements PreparedStatementParameter {
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         _type = in.readInt();
         _value = (byte[])in.readObject();
-        _length = in.readLong();
+        _length = in.readInt();
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeInt(_type);
         out.writeObject(_value);
-        out.writeLong(_length);
+        out.writeInt(_length);
     }
 
     public void setParameter(PreparedStatement pstmt, int index) throws SQLException {
@@ -77,9 +79,7 @@ public class ByteStreamParameter implements PreparedStatementParameter {
                 break;
 
             case TYPE_UNICODE:
-                // its ok to downcast here as there is no setUnicodeStream()
-                // variant with a long length value
-                pstmt.setUnicodeStream(index, bais, (int)_length);
+                pstmt.setUnicodeStream(index, bais, _length);
                 break;
 
             case TYPE_BINARY:
@@ -91,4 +91,28 @@ public class ByteStreamParameter implements PreparedStatementParameter {
     public String toString() {
         return "ByteStream: " + _length + " bytes";
     }
+
+	public void setParameterAtName(PreparedStatement pstmt, String name)
+			throws SQLException {
+		if(pstmt instanceof OraclePreparedStatement){
+			  ByteArrayInputStream bais = new ByteArrayInputStream(_value);
+			 switch(_type) {
+	            case TYPE_ASCII:
+	            	((OraclePreparedStatement)pstmt).setAsciiStreamAtName(name, bais, _length);
+	                break;
+
+	            case TYPE_UNICODE:
+	            	((OraclePreparedStatement)pstmt).setUnicodeStreamAtName(name, bais, _length);
+	                break;
+
+	            case TYPE_BINARY:
+	            	((OraclePreparedStatement)pstmt).setBinaryStreamAtName(name, bais, _length);
+	                break;
+	        }
+		}
+		else {
+			throw new SQLException("Unsupported operation");
+		}
+		
+	}
 }

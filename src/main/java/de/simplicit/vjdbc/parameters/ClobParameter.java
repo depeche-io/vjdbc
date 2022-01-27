@@ -13,6 +13,8 @@ import java.sql.Clob;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import oracle.jdbc.OraclePreparedStatement;
+
 public class ClobParameter implements PreparedStatementParameter {
     static final long serialVersionUID = -8231456859022053216L;
 
@@ -44,4 +46,15 @@ public class ClobParameter implements PreparedStatementParameter {
     public String toString() {
         return "Clob: " + _value;
     }
+
+	public void setParameterAtName(PreparedStatement pstmt, String name)
+			throws SQLException {
+		if(pstmt instanceof OraclePreparedStatement){
+			((OraclePreparedStatement)pstmt).setClobAtName(name,_value);	
+		}
+		else {
+			throw new SQLException("Unsupported operation");
+		}
+		
+	}
 }

@@ -5,6 +5,7 @@
 package de.simplicit.vjdbc.parameters;
 
 import de.simplicit.vjdbc.serial.SerialRowId;
+import oracle.jdbc.OraclePreparedStatement;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -39,5 +40,15 @@ public class RowIdParameter implements PreparedStatementParameter {
 
     public String toString() {
         return "RowId: " + _value;
+    }
+
+    public void setParameterAtName(PreparedStatement pstmt, String name)
+            throws SQLException {
+        if(pstmt instanceof OraclePreparedStatement){
+            ((OraclePreparedStatement)pstmt).setRowIdAtName(name,_value);
+        }
+        else {
+            throw new SQLException("Unsupported operation");
+        }
     }
 }

@@ -10,6 +10,8 @@ import java.io.ObjectOutput;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import oracle.jdbc.OraclePreparedStatement;
+
 public class ByteArrayParameter implements PreparedStatementParameter {
     static final long serialVersionUID = -850921577178865335L;
 
@@ -41,4 +43,15 @@ public class ByteArrayParameter implements PreparedStatementParameter {
     public String toString() {
         return "byte[]: " + _value.length + " bytes";
     }
+
+	public void setParameterAtName(PreparedStatement pstmt, String name)
+			throws SQLException {
+		if(pstmt instanceof OraclePreparedStatement){
+			((OraclePreparedStatement)pstmt).setBytesAtName(name,_value);	
+		}
+		else {
+			throw new SQLException("Unsupported operation");
+		}
+		
+	}
 }

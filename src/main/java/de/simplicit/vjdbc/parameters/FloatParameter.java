@@ -10,6 +10,8 @@ import java.io.ObjectOutput;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import oracle.jdbc.OraclePreparedStatement;
+
 public class FloatParameter implements PreparedStatementParameter {
     static final long serialVersionUID = -2273786408954216402L;
 
@@ -41,4 +43,15 @@ public class FloatParameter implements PreparedStatementParameter {
     public String toString() {
         return "float: " + _value;
     }
+
+	public void setParameterAtName(PreparedStatement pstmt, String name)
+			throws SQLException {
+		if(pstmt instanceof OraclePreparedStatement){
+			((OraclePreparedStatement)pstmt).setFloatAtName(name,_value);	
+		}
+		else {
+			throw new SQLException("Unsupported operation");
+		}
+		
+	}
 }

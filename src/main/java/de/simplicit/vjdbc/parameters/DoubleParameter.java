@@ -10,6 +10,8 @@ import java.io.ObjectOutput;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import oracle.jdbc.OraclePreparedStatement;
+
 public class DoubleParameter implements PreparedStatementParameter {
     static final long serialVersionUID = -8304299062026994797L;
 
@@ -41,4 +43,15 @@ public class DoubleParameter implements PreparedStatementParameter {
     public String toString() {
         return "double: " + _value;
     }
+
+	public void setParameterAtName(PreparedStatement pstmt, String name)
+			throws SQLException {
+		if(pstmt instanceof OraclePreparedStatement){
+			((OraclePreparedStatement)pstmt).setDoubleAtName(name,_value);	
+		}
+		else {
+			throw new SQLException("Unsupported operation");
+		}
+		
+	}
 }

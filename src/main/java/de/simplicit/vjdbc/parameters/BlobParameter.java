@@ -13,6 +13,8 @@ import java.sql.Blob;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import oracle.jdbc.OraclePreparedStatement;
+
 public class BlobParameter implements PreparedStatementParameter {
     static final long serialVersionUID = 7120087686097706094L;
 
@@ -40,4 +42,14 @@ public class BlobParameter implements PreparedStatementParameter {
     public String toString() {
         return "Blob: " + _value;
     }
+
+	public void setParameterAtName(PreparedStatement pstmt, String name)
+	throws SQLException {
+		if(pstmt instanceof OraclePreparedStatement){
+			((OraclePreparedStatement)pstmt).setBlobAtName(name,_value);	
+		}
+		else {
+			throw new SQLException("Unsupported operation");
+		}
+}
 }

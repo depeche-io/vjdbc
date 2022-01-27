@@ -280,7 +280,7 @@ public class VirtualPreparedStatement extends VirtualStatement implements Prepar
     }
 
     public void setAsciiStream(int parameterIndex, InputStream x, long length) throws SQLException {
-        setParam(parameterIndex, new ByteStreamParameter(ByteStreamParameter.TYPE_ASCII, x, length));
+        setParam(parameterIndex, new ByteStreamParameter(ByteStreamParameter.TYPE_ASCII, x, (int) length));
     }
 
     public void setBinaryStream(int parameterIndex, InputStream x) throws SQLException {
@@ -288,7 +288,7 @@ public class VirtualPreparedStatement extends VirtualStatement implements Prepar
     }
 
     public void setBinaryStream(int parameterIndex, InputStream x, long length) throws SQLException {
-        setParam(parameterIndex, new ByteStreamParameter(ByteStreamParameter.TYPE_BINARY, x, length));
+        setParam(parameterIndex, new ByteStreamParameter(ByteStreamParameter.TYPE_BINARY, x, (int) length));
     }
 
     public void setCharacterStream(int parameterIndex, Reader reader) throws SQLException {
@@ -296,7 +296,7 @@ public class VirtualPreparedStatement extends VirtualStatement implements Prepar
     }
 
     public void setCharacterStream(int parameterIndex, Reader reader, long length) throws SQLException {
-        setParam(parameterIndex, new CharStreamParameter(reader, length));
+        setParam(parameterIndex, new CharStreamParameter(reader, (int) length));
     }
 
     public void setNCharacterStream(int parameterIndex, Reader reader) throws SQLException {
@@ -304,7 +304,7 @@ public class VirtualPreparedStatement extends VirtualStatement implements Prepar
     }
 
     public void setNCharacterStream(int parameterIndex, Reader reader, long length) throws SQLException {
-        setParam(parameterIndex, new CharStreamParameter(reader, length));
+        setParam(parameterIndex, new CharStreamParameter(reader, (int) length));
     }
 
     public void setClob(int parameterIndex, Reader reader) throws SQLException {

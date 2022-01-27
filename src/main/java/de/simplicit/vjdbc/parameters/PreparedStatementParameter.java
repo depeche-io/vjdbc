@@ -13,4 +13,6 @@ import java.sql.SQLException;
  */
 public interface PreparedStatementParameter extends Externalizable {
     void setParameter(PreparedStatement pstmt, int index) throws SQLException;
+    void setParameterAtName(PreparedStatement pstmt, String name) throws SQLException;
+    
 }

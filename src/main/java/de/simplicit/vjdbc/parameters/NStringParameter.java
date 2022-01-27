@@ -4,6 +4,8 @@
 
 package de.simplicit.vjdbc.parameters;
 
+import oracle.jdbc.OraclePreparedStatement;
+
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -40,5 +42,15 @@ public class NStringParameter implements PreparedStatementParameter {
 
     public String toString() {
         return "NString: " + _value;
+    }
+
+    public void setParameterAtName(PreparedStatement pstmt, String name)
+            throws SQLException {
+        if(pstmt instanceof OraclePreparedStatement){
+            ((OraclePreparedStatement)pstmt).setNStringAtName(name,_value);
+        }
+        else {
+            throw new SQLException("Unsupported operation");
+        }
     }
 }

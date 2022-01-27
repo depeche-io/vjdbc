@@ -12,6 +12,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Calendar;
 
+import oracle.jdbc.OraclePreparedStatement;
+
 public class TimestampParameter implements PreparedStatementParameter {
     static final long serialVersionUID = -3786979212713144035L;
 
@@ -51,4 +53,19 @@ public class TimestampParameter implements PreparedStatementParameter {
     public String toString() {
         return "Timestamp: " + _value;
     }
+
+	public void setParameterAtName(PreparedStatement pstmt, String name)
+			throws SQLException {
+		if(pstmt instanceof OraclePreparedStatement){
+			if(_calendar == null) {
+				((OraclePreparedStatement)pstmt).setTimestampAtName(name,_value);	
+			} else {
+				throw new SQLException("Unsupported operation");
+			}
+		}
+		else {
+			throw new SQLException("Unsupported operation");
+		}
+		
+	}
 }

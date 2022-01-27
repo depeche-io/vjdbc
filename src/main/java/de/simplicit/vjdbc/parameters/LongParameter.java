@@ -10,6 +10,8 @@ import java.io.ObjectOutput;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import oracle.jdbc.OraclePreparedStatement;
+
 public class LongParameter implements PreparedStatementParameter {
     static final long serialVersionUID = 2047115344356276027L;
 
@@ -41,4 +43,14 @@ public class LongParameter implements PreparedStatementParameter {
     public String toString() {
         return "long: " + _value;
     }
+
+	public void setParameterAtName(PreparedStatement pstmt, String name)
+			throws SQLException {
+		if(pstmt instanceof OraclePreparedStatement){
+			((OraclePreparedStatement)pstmt).setLongAtName(name,_value);	
+		}
+		else {
+			throw new SQLException("Unsupported operation");
+		}
+	}
 }

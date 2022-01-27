@@ -10,6 +10,8 @@ import java.io.ObjectOutput;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import oracle.jdbc.OraclePreparedStatement;
+
 public class ObjectParameter implements PreparedStatementParameter {
     static final long serialVersionUID = -9065375715201787003L;
 
@@ -57,4 +59,23 @@ public class ObjectParameter implements PreparedStatementParameter {
     public String toString() {
         return "Object: " + _value;
     }
+
+	public void setParameterAtName(PreparedStatement pstmt, String name)
+			throws SQLException {
+		if(pstmt instanceof OraclePreparedStatement){
+			 if(_scale == null) {
+		            if(_targetSqlType == null) {
+		            	((OraclePreparedStatement)pstmt).setObjectAtName(name, _value);
+		            } else {
+		            	((OraclePreparedStatement)pstmt).setObjectAtName(name, _value, _targetSqlType.intValue());
+		            }
+		        } else {
+		        	((OraclePreparedStatement)pstmt).setObjectAtName(name, _value, _targetSqlType.intValue(), _scale.intValue());
+		        }
+		}
+		else {
+			throw new SQLException("Unsupported operation");
+		}
+		
+	}
 }

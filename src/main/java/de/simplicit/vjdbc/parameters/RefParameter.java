@@ -13,6 +13,8 @@ import java.sql.PreparedStatement;
 import java.sql.Ref;
 import java.sql.SQLException;
 
+import oracle.jdbc.OraclePreparedStatement;
+
 public class RefParameter implements PreparedStatementParameter {
     static final long serialVersionUID = 8647675527971168478L;
 
@@ -40,4 +42,15 @@ public class RefParameter implements PreparedStatementParameter {
     public String toString() {
         return "Ref: " + _value;
     }
+
+	public void setParameterAtName(PreparedStatement pstmt, String name)
+			throws SQLException {
+		if(pstmt instanceof OraclePreparedStatement){
+			((OraclePreparedStatement)pstmt).setRefAtName(name,_value);	
+		}
+		else {
+			throw new SQLException("Unsupported operation");
+		}
+		
+	}
 }

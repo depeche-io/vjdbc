@@ -8,27 +8,29 @@ import java.io.*;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import oracle.jdbc.OraclePreparedStatement;
+
 import de.simplicit.vjdbc.util.SQLExceptionHelper;
 
 public class CharStreamParameter implements PreparedStatementParameter {
     static final long serialVersionUID = -3934051486806729706L;
 
     private char[] _value;
-
+    
     public CharStreamParameter() {
     }
 
-    public CharStreamParameter(Reader x) throws SQLException {
+    public CharStreamParameter(Reader x, int length) throws SQLException {
         try {
-            _value = de.simplicit.vjdbc.serial.StreamSerializer.toCharArray(x);
+            _value = de.simplicit.vjdbc.serial.StreamSerializer.toCharArray(x, length);
         } catch(IOException e) {
             throw SQLExceptionHelper.wrap(e);
         }
     }
 
-    public CharStreamParameter(Reader x, long length) throws SQLException {
+    public CharStreamParameter(Reader x) throws SQLException {
         try {
-            _value = de.simplicit.vjdbc.serial.StreamSerializer.toCharArray(x, length);
+            _value = de.simplicit.vjdbc.serial.StreamSerializer.toCharArray(x);
         } catch(IOException e) {
             throw SQLExceptionHelper.wrap(e);
         }
@@ -53,4 +55,10 @@ public class CharStreamParameter implements PreparedStatementParameter {
     public String toString() {
         return "CharStream: " + _value.length + " chars";
     }
+
+	public void setParameterAtName(PreparedStatement pstmt, String name)
+			throws SQLException {
+		throw new SQLException("Unsupported operation");
+		
+	}
 }

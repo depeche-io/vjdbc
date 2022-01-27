@@ -13,6 +13,8 @@ import java.sql.Array;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import oracle.jdbc.OraclePreparedStatement;
+
 public class ArrayParameter implements PreparedStatementParameter {
     static final long serialVersionUID = 82417815012404533L;
 
@@ -44,4 +46,14 @@ public class ArrayParameter implements PreparedStatementParameter {
     public String toString() {
         return "Array: " + _value;
     }
+
+	public void setParameterAtName(PreparedStatement pstmt, String name)
+			throws SQLException {
+		if(pstmt instanceof OraclePreparedStatement){
+			((OraclePreparedStatement)pstmt).setArrayAtName(name,_value);	
+		}
+		else {
+			throw new SQLException("Unsupported operation");
+		}
+	}
 }

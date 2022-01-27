@@ -10,6 +10,8 @@ import java.io.ObjectOutput;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import oracle.jdbc.OraclePreparedStatement;
+
 public class BooleanParameter implements PreparedStatementParameter {
     static final long serialVersionUID = 1915488329736405680L;
 
@@ -41,4 +43,14 @@ public class BooleanParameter implements PreparedStatementParameter {
     public String toString() {
         return "boolean: " + (_value ? "true" : "false");
     }
+
+	public void setParameterAtName(PreparedStatement pstmt, String name)
+			throws SQLException {
+		if(pstmt instanceof OraclePreparedStatement){
+			((OraclePreparedStatement)pstmt).setBooleanAtName(name,_value);	
+		}
+		else {
+			throw new SQLException("Unsupported operation");
+		}
+	}
 }

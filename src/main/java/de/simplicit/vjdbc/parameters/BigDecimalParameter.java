@@ -11,6 +11,8 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import oracle.jdbc.OraclePreparedStatement;
+
 public class BigDecimalParameter implements PreparedStatementParameter {
     static final long serialVersionUID = -8577950851500487084L;
 
@@ -42,4 +44,16 @@ public class BigDecimalParameter implements PreparedStatementParameter {
     public String toString() {
         return "BigDecimal: " + _value.toString();
     }
+
+	public void setParameterAtName(PreparedStatement pstmt, String name)
+			throws SQLException {
+		if(pstmt instanceof OraclePreparedStatement){
+			((OraclePreparedStatement)pstmt).setBigDecimalAtName(name,_value);	
+		}
+		else {
+			throw new SQLException("Unsupported operation");
+		}
+	}
+    
+    
 }

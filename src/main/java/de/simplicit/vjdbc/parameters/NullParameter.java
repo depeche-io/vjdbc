@@ -10,6 +10,8 @@ import java.io.ObjectOutput;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import oracle.jdbc.OraclePreparedStatement;
+
 public class NullParameter implements PreparedStatementParameter {
     static final long serialVersionUID = 2061806736191837513L;
 
@@ -45,4 +47,18 @@ public class NullParameter implements PreparedStatementParameter {
     public String toString() {
         return "Null, SQL-Type: " + _sqlType;
     }
+
+	public void setParameterAtName(PreparedStatement pstmt, String name)
+			throws SQLException {
+		if(pstmt instanceof OraclePreparedStatement){
+			  if(_typeName == null) {
+				  ((OraclePreparedStatement)pstmt).setNullAtName(name, _sqlType);
+		        } else {
+		        	((OraclePreparedStatement)pstmt).setNullAtName(name, _sqlType, _typeName);
+		        }
+		} else {
+			throw new SQLException("Unsupported operation");
+		}
+		
+	}
 }

@@ -5,6 +5,7 @@
 package de.simplicit.vjdbc.parameters;
 
 import de.simplicit.vjdbc.serial.SerialSQLXML;
+import oracle.jdbc.OraclePreparedStatement;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -43,5 +44,15 @@ public class SQLXMLParameter implements PreparedStatementParameter {
         } catch (SQLException sqle) {
         }
         return "SQLXML: fail";
+    }
+
+    public void setParameterAtName(PreparedStatement pstmt, String name)
+            throws SQLException {
+        if(pstmt instanceof OraclePreparedStatement){
+            ((OraclePreparedStatement)pstmt).setSQLXMLAtName(name,_value);
+        }
+        else {
+            throw new SQLException("Unsupported operation");
+        }
     }
 }

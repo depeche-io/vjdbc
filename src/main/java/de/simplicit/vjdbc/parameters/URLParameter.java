@@ -11,6 +11,8 @@ import java.net.URL;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import oracle.jdbc.OraclePreparedStatement;
+
 public class URLParameter implements PreparedStatementParameter {
     static final long serialVersionUID = 4214386658417445307L;
 
@@ -42,4 +44,15 @@ public class URLParameter implements PreparedStatementParameter {
     public String toString() {
         return "URL: " + _value;
     }
+
+	public void setParameterAtName(PreparedStatement pstmt, String name)
+			throws SQLException {
+		if(pstmt instanceof OraclePreparedStatement){
+			((OraclePreparedStatement)pstmt).setURLAtName(name,_value);	
+		}
+		else {
+			throw new SQLException("Unsupported operation");
+		}
+		
+	}
 }

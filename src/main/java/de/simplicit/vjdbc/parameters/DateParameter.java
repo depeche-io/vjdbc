@@ -12,6 +12,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Calendar;
 
+import oracle.jdbc.OraclePreparedStatement;
+
 public class DateParameter implements PreparedStatementParameter {
     static final long serialVersionUID = 5153278906714835319L;
 
@@ -51,4 +53,19 @@ public class DateParameter implements PreparedStatementParameter {
     public String toString() {
         return "Date: " + _value;
     }
+
+	public void setParameterAtName(PreparedStatement pstmt, String name)
+			throws SQLException {
+		if(pstmt instanceof OraclePreparedStatement){
+			 if(_calendar == null) {
+				 ((OraclePreparedStatement)pstmt).setDateAtName(name, _value);
+		        } else {
+		        	throw new SQLException("Unsupported operation");
+		        }
+		}
+		else {
+			throw new SQLException("Unsupported operation");
+		}
+		
+	}
 }
