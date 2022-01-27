@@ -17,7 +17,6 @@ import java.util.logging.Logger;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import javax.rmi.PortableRemoteObject;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
