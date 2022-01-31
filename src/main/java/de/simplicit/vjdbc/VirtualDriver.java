@@ -26,8 +26,6 @@ import de.simplicit.vjdbc.command.CommandSink;
 import de.simplicit.vjdbc.command.DecoratedCommandSink;
 import de.simplicit.vjdbc.command.NullCallingContextFactory;
 import de.simplicit.vjdbc.command.StandardCallingContextFactory;
-import de.simplicit.vjdbc.ejb.EjbCommandSink;
-import de.simplicit.vjdbc.ejb.EjbCommandSinkProxy;
 import de.simplicit.vjdbc.rmi.CommandSinkRmi;
 import de.simplicit.vjdbc.rmi.CommandSinkRmiProxy;
 import de.simplicit.vjdbc.rmi.ConnectionBrokerRmi;
@@ -91,13 +89,7 @@ public final class VirtualDriver implements Driver {
 
                 String[] urlparts;
 
-                // EJB-Connection
-                if(realUrl.startsWith(EJB_IDENTIFIER)) {
-                    urlparts = split(realUrl.substring(EJB_IDENTIFIER.length()));
-                    _logger.info("VJdbc in EJB-Mode, using object " + urlparts[0]);
-                    sink = createEjbCommandSink(urlparts[0]);
-                    // RMI-Connection
-                } else if(realUrl.startsWith(RMI_IDENTIFIER)) {
+                if(realUrl.startsWith(RMI_IDENTIFIER)) {
                     urlparts = split(realUrl.substring(RMI_IDENTIFIER.length()));
                     _logger.info("VJdbc in RMI-Mode, using object " + urlparts[0]);
                     // Examine SSL property
@@ -183,14 +175,6 @@ public final class VirtualDriver implements Driver {
         CommandSinkRmi rmiSink = broker.createCommandSink();
         CommandSink proxy = new CommandSinkRmiProxy(rmiSink);
         return proxy;
-    }
-
-    private CommandSink createEjbCommandSink(String ejbname) throws Exception {
-        Context ctx = new InitialContext();
-        _logger.info("Lookup " + ejbname);
-        Object ref = ctx.lookup(ejbname);
-        _logger.info("remote bean " + ref.getClass().getName());
-        return (EjbCommandSinkProxy)ref;
     }
 
     private CommandSink createServletCommandSink(String url, Properties props) throws Exception {

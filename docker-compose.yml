@@ -1,0 +1,13 @@
+version: '3.7'
+
+services:
+
+  server:
+    build:
+      context: .
+    environment:
+      - VJDBC_CONNECTIONS=dev4
+      - VJDBC_dev4_URL=jdbc:oracle:thin:@srv-obis-dev-db1.u-sluno.cz:1521:DGALOB
+      - VJDBC_dev4_DRIVER=oracle.jdbc.driver.OracleDriver
+    ports:
+      - 8090:8080

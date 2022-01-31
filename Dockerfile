@@ -7,8 +7,7 @@ RUN mvn dependency:go-offline -B
 
 COPY src /app/src
 
-RUN mvn package
+RUN mvn package war:war
 
-FROM openjdk:11-jdk
-COPY --from=build /app/target/*.jar app.jar
-ENTRYPOINT ["java", "-Xmx512m", "/app.jar"]
+FROM jetty:10-jre11 AS server
+COPY --from=build /app/target/*.war /var/lib/jetty/webapps/ROOT.war
