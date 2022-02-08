@@ -4,7 +4,7 @@
     <groupId>io.depeche</groupId>
     <artifactId>vjdbc</artifactId>
     <packaging>jar</packaging>
-    <version>1.7.3</version>
+    <version>1.7.4-SNAPSHOT</version>
     <name>Fork of VJDBC JDBC driver</name>
     <description>Legacy VJDBC driver with proprietary Oracle (ojdbc) extensions.</description>
     <url>https://github.com/depeche-io/vjdbc</url>
